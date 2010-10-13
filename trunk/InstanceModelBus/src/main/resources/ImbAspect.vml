@@ -1,0 +1,16 @@
+
+package $package;
+
+public aspect $controllerType.toString()_Roo_Imb {
+	after() returning : call (* ($package.$controllerType).create(..)) {
+		System.out.println("Updating create method for: $controllerType");
+	}
+	
+	after() returning : call (* ($package.$controllerType).update(..)) {
+		System.out.println("Updating update method for: $controllerType");
+	}
+	
+	after() returning : call (* ($package.$controllerType).delete(..)) {
+		System.out.println("Updating delete method for: $controllerType");
+	}
+}

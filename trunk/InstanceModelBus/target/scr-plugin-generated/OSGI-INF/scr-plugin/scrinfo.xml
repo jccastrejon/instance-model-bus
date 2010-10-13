@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" name="mx.itesm.imb.ImbCommands">
+        <implementation class="mx.itesm.imb.ImbCommands"/>
+        <service servicefactory="false">
+            <provide interface="org.springframework.roo.shell.CommandMarker"/>
+        </service>
+        <property name="service.pid" value="mx.itesm.imb.ImbCommands" private="false"/>
+        <reference name="operations" interface="mx.itesm.imb.ImbOperations" cardinality="1..1" policy="static" bind="bindOperations" unbind="unbindOperations" checked="true"/>
+    </scr:component>
+    <scr:component enabled="true" name="mx.itesm.imb.ImbOperationsImpl">
+        <implementation class="mx.itesm.imb.ImbOperationsImpl"/>
+        <service servicefactory="false">
+            <provide interface="mx.itesm.imb.ImbOperations"/>
+        </service>
+        <property name="service.pid" value="mx.itesm.imb.ImbOperationsImpl" private="false"/>
+        <reference name="metadataService" interface="org.springframework.roo.metadata.MetadataService" cardinality="1..1" policy="static" bind="bindMetadataService" unbind="unbindMetadataService" checked="true"/>
+        <reference name="fileManager" interface="org.springframework.roo.process.manager.FileManager" cardinality="1..1" policy="static" bind="bindFileManager" unbind="unbindFileManager" checked="true"/>
+        <reference name="pathResolver" interface="org.springframework.roo.project.PathResolver" cardinality="1..1" policy="static" bind="bindPathResolver" unbind="unbindPathResolver" checked="true"/>
+    </scr:component>
+</components>
