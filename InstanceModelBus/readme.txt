@@ -1,16 +1,27 @@
 1. Plugins that should be loaded:
 
-	- Apache Velocity Engine (1.6.2)
-	- felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/velocity/com.springsource.org.apache.velocity/1.6.2/com.springsource.org.apache.velocity-1.6.2.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.7.1/com.springsource.org.apache.tools.ant.launch-1.7.1.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant/1.7.1/com.springsource.org.apache.tools.ant-1.7.1.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.lang/2.4.0/com.springsource.org.apache.commons.lang-2.4.0.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.collections/3.2.1/com.springsource.org.apache.commons.collections-3.2.1.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/velocity/com.springsource.org.apache.velocity/1.6.2/com.springsource.org.apache.velocity-1.6.2.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/javax/xml/stream/com.springsource.javax.xml.stream/1.0.1/com.springsource.javax.xml.stream-1.0.1.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.fastinfoset/1.2.2/com.springsource.com.sun.xml.fastinfoset-1.2.2.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/javax/activation/com.springsource.javax.activation/1.1.1/com.springsource.javax.activation-1.1.1.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/javax/xml/bind/com.springsource.javax.xml.bind/2.2.0/com.springsource.javax.xml.bind-2.2.0.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.bind/2.2.0/com.springsource.com.sun.xml.bind-2.2.0.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/jvnet/staxex/com.springsource.org.jvnet.staxex/1.0.0/com.springsource.org.jvnet.staxex-1.0.0.jar
+	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.io/1.4.0/com.springsource.org.apache.commons.io-1.4.0.jar
 
-	- Apache Commons Collections (3.2.1)
-	- felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.collections/3.2.1/com.springsource.org.apache.commons.collections-3.2.1.jar
+
+2. To install add-on
+
+	roo -script install.roo
+
+
+3. Update project
 	
-	- Apache Commons Lang (2.4.0)
-	- felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.lang/2.4.0/com.springsource.org.apache.commons.lang-2.4.0.jar
-		
-	- mx.itesm.imb (0.1.0.BUILD-SNAPSHOT)
-	- felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+	perform eclipse
 
 
 2. IMB command: imb update controllers
