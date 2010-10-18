@@ -24,7 +24,7 @@
     <description>Instance Model Bus Roo's addon</description>
     <url>http://itesm.mx</url>
 	<properties>
-		<roo.version>1.1.0.M3</roo.version>
+		<roo.version>1.1.0.RC1</roo.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>
@@ -109,6 +109,60 @@
     		<groupId>org.apache.velocity</groupId>
     		<artifactId>com.springsource.org.apache.velocity</artifactId>
     		<version>1.6.2</version>
+    		<type>bundle</type>
+		</dependency>
+		<dependency>
+    		<groupId>org.apache.ant</groupId>
+    		<artifactId>com.springsource.org.apache.tools.ant</artifactId>
+    		<version>1.7.1</version>
+    		<type>bundle</type>
+		</dependency>
+		<dependency>
+    		<groupId>org.apache.ant</groupId>
+    		<artifactId>com.springsource.org.apache.tools.ant.launch</artifactId>
+    		<version>1.7.1</version>
+    		<type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>com.springsource.org.apache.commons.io</artifactId>
+		    <version>1.4.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.xml</groupId>
+		    <artifactId>com.springsource.com.sun.xml.bind</artifactId>
+		    <version>2.2.0</version>
+		    <type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.xml</groupId>
+		    <artifactId>com.springsource.com.sun.xml.fastinfoset</artifactId>
+		    <version>1.2.2</version>
+		    <type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.stream</groupId>
+		    <artifactId>com.springsource.javax.xml.stream</artifactId>
+		    <version>1.0.1</version>
+		    <type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>javax.activation</groupId>
+		    <artifactId>com.springsource.javax.activation</artifactId>
+		    <version>1.1.1</version>
+		    <type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>com.springsource.javax.xml.bind</artifactId>
+		    <version>2.2.0</version>
+		    <type>bundle</type>
+		</dependency>
+		<dependency>
+		    <groupId>org.jvnet.staxex</groupId>
+		    <artifactId>com.springsource.org.jvnet.staxex</artifactId>
+		    <version>1.0.0</version>
+		    <type>bundle</type>
 		</dependency>
 	</dependencies>
 	<build>

@@ -1,0 +1,3 @@
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar

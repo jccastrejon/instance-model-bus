@@ -14,16 +14,18 @@ import org.springframework.roo.shell.CommandMarker;
 @Service
 public class ImbCommands implements CommandMarker {
 
-	@Reference
-	private ImbOperations operations;
+    @Reference
+    private ImbOperations operations;
 
-	@CliAvailabilityIndicator("imb update controllers")
-	public boolean isUpdateInterfaceAvailable() {
-		return operations.isUpdateControllersAvailable();
-	}
+    @CliAvailabilityIndicator("imb update controllers")
+    public boolean isUpdateInterfaceAvailable() {
+        return operations.isUpdateControllersAvailable();
+    }
 
-	@CliCommand(value = "imb update controllers", help = "Updates the web mvc controllers to communicate with the Instance Model Bus")
-	public void writeHello() {
-		operations.updateControllers();
-	}
+    @CliCommand(value = "imb update controllers", help = "Updates the web mvc controllers to communicate with the Instance Model Bus")
+    public void writeHello() {
+        operations.updateControllers();
+        operations.generateEntitiesSchemas();
+        operations.updateMarshallingConfiguration();
+    }
 }

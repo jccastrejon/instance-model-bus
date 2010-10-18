@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
@@ -42,11 +45,21 @@ public class ImbOperationsImpl implements ImbOperations {
     @Reference
     private FileManager fileManager;
 
+    /**
+     * ImbAspect velocity template.
+     */
     private static Template aspectTemplate;
+
+    /**
+     * JAXB schemagen ant build file.
+     */
+    private static File schemagenBuildFile;
 
     static {
         try {
             ImbOperationsImpl.aspectTemplate = ImbOperationsImpl.getVelocityTemplate();
+            ImbOperationsImpl.schemagenBuildFile = new File(
+                    "/Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/src/main/resources/schemagen.xml");
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage());
         }
@@ -74,6 +87,9 @@ public class ImbOperationsImpl implements ImbOperations {
         return metadataService.get(ProjectMetadata.getProjectIdentifier()) != null;
     }
 
+    /**
+     * @see mx.itesm.imb.ImbCommands#updateControllers()
+     */
     public void updateControllers() {
         String antPath;
         String packageName;
@@ -102,6 +118,114 @@ public class ImbOperationsImpl implements ImbOperations {
                         + e.getMessage());
             }
         }
+    }
+
+    /**
+     * @see mx.itesm.imb.ImbCommands#generateEntitiesSchemas()
+     */
+    @SuppressWarnings("unchecked")
+    public void generateEntitiesSchemas() {
+        File srcFile;
+        String antPath;
+        int processCode;
+        Process process;
+        File schemasDir;
+        String entityName;
+        String packageName;
+        File schemagenFile;
+        String schemagenContents;
+        List<String> outputContents;
+        List<String> typesSchemaContents;
+        List<String> detailsSchemaContents;
+        SortedSet<FileDetails> entries;
+
+        try {
+            // Identify the classes that should generate schemas
+            antPath = pathResolver.getRoot(Path.SRC_MAIN_JAVA) + File.separatorChar + "**" + File.separatorChar
+                    + "*_Roo_JavaBean.aj";
+            entries = fileManager.findMatchingAntPath(antPath);
+
+            // Clean directory where the schemas will be generated
+            schemasDir = new File(pathResolver.getRoot(Path.SRC_MAIN_JAVA) + "/schema_temp");
+
+            // Generate Java Beans for the identified schemas
+            for (FileDetails file : entries) {
+                srcFile = file.getFile();
+                entityName = srcFile.getName().replace("_Roo_JavaBean.aj", "");
+                outputContents = new ArrayList<String>();
+
+                // Format file
+                packageName = "";
+                for (String line : (List<String>) FileUtils.readLines(srcFile)) {
+                    // Remove annotations
+                    if (!line.contains("@")) {
+                        // Change form aspect to class declaration
+                        if (line.startsWith("privileged")) {
+                            outputContents.add("@javax.xml.bind.annotation.XmlRootElement(namespace =\"http://"
+                                    + packageName + "\")\n");
+                            outputContents.add(line.replace("privileged", "public").replace("aspect", "class").replace(
+                                    "_Roo_JavaBean", ""));
+                        } else {
+                            // Remove aspect details
+                            outputContents.add(line.replace(entityName + ".", ""));
+                        }
+                    }
+
+                    if (line.startsWith("package")) {
+                        packageName = line.replace("package", "").replace(";", "").trim();
+                    }
+                }
+
+                // Write file
+                FileUtils.writeLines(new File(schemasDir, entityName + ".java"), outputContents);
+            }
+
+            // Execute schemagen
+            schemagenFile = new File(schemasDir, "build.xml");
+            schemagenContents = FileUtils.readFileToString(ImbOperationsImpl.schemagenBuildFile);
+            schemagenContents = schemagenContents.replace("${output.dir}", schemasDir.getAbsolutePath());
+            schemagenContents = schemagenContents.replace("${src.dir}", schemasDir.getAbsolutePath());
+            FileUtils.writeStringToFile(schemagenFile, schemagenContents);
+            process = Runtime.getRuntime().exec("ant -buildfile " + schemagenFile.getAbsolutePath());
+            processCode = process.waitFor();
+
+            // Error while executing schemagen
+            if (processCode != 0) {
+                throw new RuntimeException();
+            }
+
+            // Merge schemas and clean up
+            typesSchemaContents = FileUtils.readLines(new File(schemasDir, "schema1.xsd"));
+            detailsSchemaContents = FileUtils.readLines(new File(schemasDir, "schema2.xsd"));
+            outputContents = new ArrayList<String>(typesSchemaContents.size() + detailsSchemaContents.size());
+
+            // Elements
+            for (String line : typesSchemaContents) {
+                if (!line.contains("<xs:import") && !line.contains("</xs:schema")) {
+                    outputContents.add(line);
+                }
+            }
+
+            // Details
+            for (String line : detailsSchemaContents) {
+                if (!line.contains("<xs:import") && !line.contains("<?xml") && !line.contains("<xs:schema")) {
+                    outputContents.add(line);
+                }
+            }
+
+            FileUtils.writeLines(new File(schemasDir.getParentFile(), "schema.xsd"), outputContents);
+            FileUtils.forceDelete(schemasDir);
+            logger.log(Level.INFO, "Generated entities schemas for: " + entries);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while generating entities schemas: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * @see mx.itesm.imb.ImbCommands#updateMarshallingConfiguration()
+     */
+    public void updateMarshallingConfiguration() {
+        logger.log(Level.INFO, "Updating Spring configuration...");
     }
 
     /**

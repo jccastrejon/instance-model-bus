@@ -5,16 +5,27 @@ package mx.itesm.imb;
  */
 public interface ImbOperations {
 
-	/**
-	 * Determine if the update operation is available.
-	 * 
-	 * @return
-	 */
-	boolean isUpdateControllersAvailable();
+    /**
+     * Determine if the update operation is available.
+     * 
+     * @return
+     */
+    boolean isUpdateControllersAvailable();
 
-	/**
-	 * Update MVC controllers to allow communication with the Instance Model
-	 * Bus.
-	 */
-	void updateControllers();
+    /**
+     * Update MVC controllers to allow communication with the Instance Model
+     * Bus.
+     */
+    void updateControllers();
+
+    /**
+     * Generate XML schemas for the entities associated to MVC controllers
+     */
+    void generateEntitiesSchemas();
+
+    /**
+     * Update the Spring configuration with the marshalling data of the entities
+     * associated to MVC controllers
+     */
+    void updateMarshallingConfiguration();
 }
