@@ -125,6 +125,8 @@ public class ImbOperationsImpl implements ImbOperations {
      */
     @SuppressWarnings("unchecked")
     public void generateEntitiesSchemas() {
+        String tns;
+        int tnsIndex;
         File srcFile;
         String antPath;
         int processCode;
@@ -172,7 +174,7 @@ public class ImbOperationsImpl implements ImbOperations {
                     }
 
                     if (line.startsWith("package")) {
-                        packageName = line.replace("package", "").replace(";", "").trim();
+                        packageName = line.replace("package", "").replace(";", "").trim() + ".imb";
                     }
                 }
 
@@ -202,7 +204,14 @@ public class ImbOperationsImpl implements ImbOperations {
             // Elements
             for (String line : typesSchemaContents) {
                 if (!line.contains("<xs:import") && !line.contains("</xs:schema")) {
-                    outputContents.add(line);
+                    if (line.contains("<xs:schema")) {
+                        tnsIndex = line.indexOf("targetNamespace=") + "targetNamespace=".length() + 1;
+                        tns = line.substring(tnsIndex, line.indexOf("\"", tnsIndex));
+                        logger.log(Level.INFO, "index: " + tnsIndex + ", tns: " + tns);
+                        outputContents.add(line.substring(0, line.length() - 1) + " xmlns:tns=\"" + tns + "\">");
+                    } else {
+                        outputContents.add(line.replace("type=\"", "type=\"tns:"));
+                    }
                 }
             }
 
@@ -213,7 +222,7 @@ public class ImbOperationsImpl implements ImbOperations {
                 }
             }
 
-            FileUtils.writeLines(new File(schemasDir.getParentFile(), "schema.xsd"), outputContents);
+            FileUtils.writeLines(new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd"), outputContents);
             FileUtils.forceDelete(schemasDir);
             logger.log(Level.INFO, "Generated entities schemas for: " + entries);
         } catch (Exception e) {
