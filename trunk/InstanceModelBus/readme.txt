@@ -13,6 +13,8 @@
 	felix shell start file:///Users/jccastrejon/.m2/repository/org/jvnet/staxex/com.springsource.org.jvnet.staxex/1.0.0/com.springsource.org.jvnet.staxex-1.0.0.jar
 	felix shell start file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.io/1.4.0/com.springsource.org.apache.commons.io-1.4.0.jar
 
+	felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/net.tzolov.httprepresentations.roo.addon-1.1.2-SNAPSHOT.jar
+	felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/net.tzolov.jaxb.roo.addon-1.1.2-SNAPSHOT.jar
 
 2. To install add-on
 
