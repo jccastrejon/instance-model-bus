@@ -180,6 +180,7 @@ public class ImbOperationsImpl implements ImbOperations {
 
                 // Write file
                 FileUtils.writeLines(new File(schemasDir, entityName + ".java"), outputContents);
+                logger.log(Level.INFO, "Generating XML schema for " + srcFile);
             }
 
             // Execute schemagen
@@ -224,7 +225,7 @@ public class ImbOperationsImpl implements ImbOperations {
 
             FileUtils.writeLines(new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd"), outputContents);
             FileUtils.forceDelete(schemasDir);
-            logger.log(Level.INFO, "Generated entities schemas for: " + entries);
+            logger.log(Level.INFO, "XML schemas correctly generated");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error while generating entities schemas: " + e.getMessage(), e);
         }
