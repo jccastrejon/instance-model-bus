@@ -1,16 +1,24 @@
 
-package $package;
+package $controllerPackage;
+
+import $typePackage.$type;
+import org.springframework.ui.Model;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.validation.BindingResult;
 
 public aspect $controllerType.toString()_Roo_Imb {
-	after() returning : execution (* ($package.$controllerType).create(..)) {
-		System.out.println("Updating create method for: $controllerType");
+	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
+		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
+		System.out.println("Updating create method for: $controllerType" + ", with object: " + object);
 	}
 	
-	after() returning : execution (* ($package.$controllerType).update(..)) {
-		System.out.println("Updating update method for: $controllerType");
+	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
+		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
+		System.out.println("Updating update method for: $controllerType" + ", with object: " + object);
 	}
 	
-	after() returning : execution (* ($package.$controllerType).delete(..)) {
-		System.out.println("Updating delete method for: $controllerType");
+	after(Long id, Integer page, Integer size, Model model) returning : 
+		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
+		System.out.println("Updating delete method for: $controllerType" + ", with id: " + id);
 	}
 }
