@@ -18,7 +18,9 @@
 
 2. To install add-on
 
-	roo -script install.roo
+	roo 
+	
+	script -file install.roo
 
 
 3. Update project

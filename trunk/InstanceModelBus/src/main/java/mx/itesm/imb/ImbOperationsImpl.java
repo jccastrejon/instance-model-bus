@@ -60,7 +60,7 @@ public class ImbOperationsImpl implements ImbOperations {
             ImbOperationsImpl.aspectTemplate = ImbOperationsImpl.getVelocityTemplate();
             ImbOperationsImpl.schemagenBuildFile = new File(
                     "/Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/src/main/resources/schemagen.xml");
-        } catch (Exception e) {
+        } catch (Exception e) { 
             logger.log(Level.SEVERE, e.getMessage());
         }
     }
@@ -114,8 +114,8 @@ public class ImbOperationsImpl implements ImbOperations {
                         packageName, controllerFile.getParentFile().getAbsolutePath());
                 logger.log(Level.INFO, file.getCanonicalPath() + " controller updated");
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error while updating " + file.getCanonicalPath() + " controller: "
-                        + e.getMessage());
+                logger.log(Level.SEVERE,
+                        "Error while updating " + file.getCanonicalPath() + " controller: " + e.getMessage());
             }
         }
     }
@@ -135,11 +135,12 @@ public class ImbOperationsImpl implements ImbOperations {
         String entityName;
         String packageName;
         File schemagenFile;
+        List<String> enumNames;
         String schemagenContents;
         List<String> outputContents;
+        SortedSet<FileDetails> entries;
         List<String> typesSchemaContents;
         List<String> detailsSchemaContents;
-        SortedSet<FileDetails> entries;
 
         try {
             // Identify the classes that should generate schemas
@@ -165,8 +166,8 @@ public class ImbOperationsImpl implements ImbOperations {
                         if (line.startsWith("privileged")) {
                             outputContents.add("@javax.xml.bind.annotation.XmlRootElement(namespace =\"http://"
                                     + packageName + "\")\n");
-                            outputContents.add(line.replace("privileged", "public").replace("aspect", "class").replace(
-                                    "_Roo_JavaBean", ""));
+                            outputContents.add(line.replace("privileged", "public").replace("aspect", "class")
+                                    .replace("_Roo_JavaBean", ""));
                         } else {
                             // Remove aspect details
                             outputContents.add(line.replace(entityName + ".", ""));
@@ -181,6 +182,18 @@ public class ImbOperationsImpl implements ImbOperations {
                 // Write file
                 FileUtils.writeLines(new File(schemasDir, entityName + ".java"), outputContents);
                 logger.log(Level.INFO, "Generating XML schema for " + srcFile);
+            }
+
+            // Copy enum types to avoid compilation errors
+            antPath = pathResolver.getRoot(Path.SRC_MAIN_JAVA) + File.separatorChar + "**" + File.separatorChar
+                    + "*.java";
+            entries = fileManager.findMatchingAntPath(antPath);
+            enumNames = new ArrayList<String>();
+            for (FileDetails file : entries) {
+                if(FileUtils.readFileToString(file.getFile()).contains("enum")) {
+                    enumNames.add(file.getFile().getName().replace(".java", "").toLowerCase());
+                    FileUtils.copyFile(file.getFile(), new File(schemasDir, file.getFile().getName()));
+                }
             }
 
             // Execute schemagen
@@ -219,11 +232,20 @@ public class ImbOperationsImpl implements ImbOperations {
             // Details
             for (String line : detailsSchemaContents) {
                 if (!line.contains("<xs:import") && !line.contains("<?xml") && !line.contains("<xs:schema")) {
-                    outputContents.add(line);
+                    if(line.contains("type=")) {
+                        if(!line.contains("type=\"xs:")) {
+                            outputContents.add(line.replace("type=\"", "type=\"tns:"));
+                        } else {
+                            outputContents.add(line);
+                        }
+                    } else {
+                        outputContents.add(line);
+                    }
                 }
             }
 
-            FileUtils.writeLines(new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd"), outputContents);
+            FileUtils
+                    .writeLines(new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd"), outputContents);
             FileUtils.forceDelete(schemasDir);
             logger.log(Level.INFO, "XML schemas correctly generated");
         } catch (Exception e) {
@@ -253,8 +275,10 @@ public class ImbOperationsImpl implements ImbOperations {
         VelocityContext context;
 
         context = new VelocityContext();
-        context.put("package", packageName);
+        context.put("controllerPackage", packageName);
         context.put("controllerType", controllerName);
+        context.put("type", controllerName.replace("Controller", ""));
+        context.put("typePackage", packageName.replace("web", "domain"));
 
         writer = new FileWriter(new File(controllerPath, controllerName + "_Roo_Imb.aj"));
         ImbOperationsImpl.aspectTemplate.merge(context, writer);

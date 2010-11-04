@@ -23,9 +23,12 @@ public class ImbCommands implements CommandMarker {
     }
 
     @CliCommand(value = "imb update controllers", help = "Updates the web mvc controllers to communicate with the Instance Model Bus")
-    public void writeHello() {
+    public void updateController() {
         operations.updateControllers();
+    }
+    
+    @CliCommand(value = "imb generate schemas", help = "Generates XML Schemas for the entities of an application")
+    public void generateSchemas() {
         operations.generateEntitiesSchemas();
-        operations.updateMarshallingConfiguration();
     }
 }

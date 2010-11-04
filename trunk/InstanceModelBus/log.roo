@@ -485,3 +485,67 @@ felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceMo
 osgi ps
 exit
 // Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-10-26 16:35:11
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 14:27:37
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+osgi ps
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 14:29:32
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 15:34:47
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 15:37:11
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 15:55:39
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 15:57:12
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:01:30
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:02:00
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:18:28
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:19:06
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:27:37
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:28:12
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:40:03
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:40:49
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:51:19
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:51:43
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log opened at 2010-11-04 16:54:10
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+felix shell start file:///Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install.roo
+exit
+// Spring Roo 1.1.0.RC1 [rev 51cb976] log closed at 2010-11-04 16:54:42
