@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
@@ -60,7 +62,7 @@ public class ImbOperationsImpl implements ImbOperations {
             ImbOperationsImpl.aspectTemplate = ImbOperationsImpl.getVelocityTemplate();
             ImbOperationsImpl.schemagenBuildFile = new File(
                     "/Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/src/main/resources/schemagen.xml");
-        } catch (Exception e) { 
+        } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage());
         }
     }
@@ -190,7 +192,7 @@ public class ImbOperationsImpl implements ImbOperations {
             entries = fileManager.findMatchingAntPath(antPath);
             enumNames = new ArrayList<String>();
             for (FileDetails file : entries) {
-                if(FileUtils.readFileToString(file.getFile()).contains("enum")) {
+                if (FileUtils.readFileToString(file.getFile()).contains("enum")) {
                     enumNames.add(file.getFile().getName().replace(".java", "").toLowerCase());
                     FileUtils.copyFile(file.getFile(), new File(schemasDir, file.getFile().getName()));
                 }
@@ -232,14 +234,19 @@ public class ImbOperationsImpl implements ImbOperations {
             // Details
             for (String line : detailsSchemaContents) {
                 if (!line.contains("<xs:import") && !line.contains("<?xml") && !line.contains("<xs:schema")) {
-                    if(line.contains("type=")) {
-                        if(!line.contains("type=\"xs:")) {
+                    if (line.contains("type=")) {
+                        // References to other types in the same schema
+                        if (!line.contains("type=\"xs:")) {
                             outputContents.add(line.replace("type=\"", "type=\"tns:"));
                         } else {
                             outputContents.add(line);
                         }
                     } else {
                         outputContents.add(line);
+                        // Type Id
+                        if (line.contains("<xs:sequence")) {
+                            outputContents.add("<xs:element name=\"id\" type=\"xs:long\" minOccurs=\"0\"/>");
+                        }
                     }
                 }
             }
@@ -273,12 +280,27 @@ public class ImbOperationsImpl implements ImbOperations {
             throws ResourceNotFoundException, ParseErrorException, MethodInvocationException, IOException {
         Writer writer;
         VelocityContext context;
+        List<String> packageNames;
+        StringBuilder imbTypePackage;
 
+        // Imb Type package name
+        imbTypePackage = new StringBuilder("imb.");
+        packageNames = Arrays.asList(packageName.replace("web", "domain").split("\\."));
+        Collections.reverse(packageNames);
+        for (int i = 0; i < packageNames.size(); i++) {
+            imbTypePackage.append(packageNames.get(i));
+            if (i < (packageNames.size() - 1)) {
+                imbTypePackage.append(".");
+            }
+        }
+
+        // Velocity configuration
         context = new VelocityContext();
         context.put("controllerPackage", packageName);
         context.put("controllerType", controllerName);
         context.put("type", controllerName.replace("Controller", ""));
         context.put("typePackage", packageName.replace("web", "domain"));
+        context.put("imbTypePackage", imbTypePackage.toString());
 
         writer = new FileWriter(new File(controllerPath, controllerName + "_Roo_Imb.aj"));
         ImbOperationsImpl.aspectTemplate.merge(context, writer);
