@@ -133,12 +133,16 @@ public class ImbOperationsImpl implements ImbOperations {
         String antPath;
         int processCode;
         Process process;
+        File schemaFile;
         File schemasDir;
         String entityName;
         String packageName;
         File schemagenFile;
+        int rootElementIndex;
+        String rootElementName;
         List<String> enumNames;
         String schemagenContents;
+        String schemaFileContents;
         List<String> outputContents;
         SortedSet<FileDetails> entries;
         List<String> typesSchemaContents;
@@ -251,8 +255,21 @@ public class ImbOperationsImpl implements ImbOperations {
                 }
             }
 
-            FileUtils
-                    .writeLines(new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd"), outputContents);
+            // Schema file
+            schemaFile = new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES), "/schema.xsd");
+            FileUtils.writeLines(schemaFile, outputContents);
+
+            // Root element
+            schemaFileContents = FileUtils.readFileToString(schemaFile);
+            rootElementIndex = schemaFileContents.indexOf("xs:element name=\"");
+            rootElementName = schemaFileContents.substring(rootElementIndex + "xs:element name=\"".length(),
+                    schemaFileContents.indexOf("\"", rootElementIndex + "xs:element name=\"".length() + 1));
+            schemaFileContents = schemaFileContents.replace("type=\"tns:" + rootElementName + "\"/>", ">");
+            schemaFileContents = schemaFileContents.replace("<xs:complexType name=\"" + rootElementName + "\">",
+                    "<xs:complexType>");
+            schemaFileContents = schemaFileContents.replace("</xs:complexType>", "</xs:complexType></xs:element>");
+            FileUtils.writeStringToFile(schemaFile, schemaFileContents);
+
             FileUtils.forceDelete(schemasDir);
             logger.log(Level.INFO, "XML schemas correctly generated");
         } catch (Exception e) {
