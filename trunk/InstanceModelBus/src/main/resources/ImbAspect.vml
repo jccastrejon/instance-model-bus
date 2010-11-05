@@ -1,24 +1,92 @@
 
 package $controllerPackage;
 
-import $typePackage.$type;
-import org.springframework.ui.Model;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.datatype.DatatypeFactory;
+
+import $typePackage.$type;
+
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
-		System.out.println("Updating create method for: $controllerType" + ", with object: " + object);
+		System.out.println("Updating create method for: $controllerType" + ", with object: " + this.convertToImbItem(object));
 	}
 	
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
-		System.out.println("Updating update method for: $controllerType" + ", with object: " + object);
+		System.out.println("Updating update method for: $controllerType" + ", with object: " + this.convertToImbItem(object));
 	}
 	
 	after(Long id, Integer page, Integer size, Model model) returning : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		System.out.println("Updating delete method for: $controllerType" + ", with id: " + id);
 	}
+	
+	/**
+	* Convert an object to an instance that used for communication to the IMB Bus
+	*/
+	public $imbTypePackage.$type convertToImb$type($type object) {
+        Method returnValueSetMethod;
+        Object objectMethodReturnValue;
+        $imbTypePackage.$type returnValue;
+
+        try {
+            returnValue = new $imbTypePackage.$type();
+
+            for (Method method : object.getClass().getDeclaredMethods()) {
+                if (method.getName().startsWith("get")) {
+                    returnValueSetMethod = null;
+                    objectMethodReturnValue = method.invoke(object, (Object[]) new Class<?>[0]);
+                    for (Method returnValueMethod : $imbTypePackage.$type. class.getDeclaredMethods()) {
+                        if (returnValueMethod.getName().equals(method.getName().replace("get", "set"))) {
+                            returnValueSetMethod = returnValueMethod;
+                            break;
+                        }
+                    }
+
+                    if (returnValueSetMethod != null) {
+                        System.out.println("Executing: " + returnValueSetMethod.getName() + ", with: "
+                                + objectMethodReturnValue);
+
+                        // Enum
+                        if (method.getReturnType().isEnum()) {
+                            returnValueSetMethod.invoke(
+                                    returnValue,
+                                    returnValueSetMethod.getParameterTypes()[0].getDeclaredMethod("valueOf",
+                                            String.class)
+                                            .invoke(null, objectMethodReturnValue.toString().toUpperCase()));
+                        }
+
+                        // Date
+                        else if (Date.class.isAssignableFrom(method.getReturnType())) {
+                            GregorianCalendar calendar = new GregorianCalendar();
+                            calendar.setTime((Date) objectMethodReturnValue);
+                            returnValueSetMethod.invoke(returnValue, DatatypeFactory.newInstance()
+                                    .newXMLGregorianCalendar(calendar));
+                        }
+
+                        // Simple types
+                        else {
+                            returnValueSetMethod.invoke(returnValue, objectMethodReturnValue);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            if (e.getCause() != null) {
+                e.getCause().printStackTrace();
+            }
+            e.printStackTrace();
+            returnValue = null;
+        }
+
+        return returnValue;
+    }
 }
