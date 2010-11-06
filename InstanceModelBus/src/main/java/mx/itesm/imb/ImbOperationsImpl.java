@@ -97,6 +97,8 @@ public class ImbOperationsImpl implements ImbOperations {
         String packageName;
         File controllerFile;
         FileDetails srcRoot;
+        File configurationFile;
+        String configurationContents;
         SortedSet<FileDetails> entries;
 
         // Identify mvc-controllers
@@ -119,6 +121,24 @@ public class ImbOperationsImpl implements ImbOperations {
                 logger.log(Level.SEVERE,
                         "Error while updating " + file.getCanonicalPath() + " controller: " + e.getMessage());
             }
+        }
+
+        // Update Rest configuration
+        try {
+            configurationFile = new File(pathResolver.getRoot(Path.SRC_MAIN_RESOURCES)
+                    + "/META-INF/spring/applicationContext-contentresolver.xml");
+            configurationContents = FileUtils.readFileToString(configurationFile);
+
+            // TODO: Change to classpath search
+            configurationContents = configurationContents.replace(
+                    "</beans>",
+                    FileUtils.readFileToString(new File(
+                            "/Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBus/src/main/resources",
+                            "RestTemplate.vml"))
+                            + "</beans>");
+            FileUtils.writeStringToFile(configurationFile, configurationContents);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error updating Rest configuration: " + e.getMessage());
         }
     }
 
@@ -318,6 +338,9 @@ public class ImbOperationsImpl implements ImbOperations {
         context.put("type", controllerName.replace("Controller", ""));
         context.put("typePackage", packageName.replace("web", "domain"));
         context.put("imbTypePackage", imbTypePackage.toString());
+
+        // TODO: Change to configuration file
+        context.put("imbAddress", "http://localhost:9090/imbtl");
 
         writer = new FileWriter(new File(controllerPath, controllerName + "_Roo_Imb.aj"));
         ImbOperationsImpl.aspectTemplate.merge(context, writer);
