@@ -1,0 +1,111 @@
+module Ecore2ImbEcore;
+create OUT: Ecore from IN: Ecore;
+
+rule GenerateImbSystem {
+	from
+		input: Ecore!EPackage
+	to
+		output: Ecore!EPackage(
+			name <- input.name,
+			nsPrefix <- input.nsPrefix,
+			nsURI <- input.nsURI,
+			eClassifiers <- Set{system} 
+							-> union(input.eClassifiers 
+										-> collect(class| 
+													if class.oclIsTypeOf(Ecore!EEnum)
+														then thisModule.generateImbEnum(class)
+														else thisModule.generateImbClass(class)
+													endif))
+			),
+		system: Ecore!EClass(
+			name <- 'System',
+			eStructuralFeatures <- input.eClassifiers -> collect(class|
+																	if not class.oclIsTypeOf(Ecore!EEnum)
+																		then thisModule.generateSystemReference(class)
+																		else Set{}
+																	endif))
+}
+
+lazy rule generateSystemReference {
+	from
+		input: Ecore!EClass
+	to
+		output: Ecore!EReference(
+			name <- input.name,
+			upperBound <- -1,
+			containment <- true,
+			eType <- thisModule.getReferenceDataType(input.name)
+			)
+}
+
+lazy rule getReferenceDataType {
+	from
+		input: String
+	to
+		output: Ecore!EDataType(
+				name <- input,
+				instanceClassName <- input
+			)
+}
+
+lazy rule generateImbEnum {
+	from
+		input: Ecore!EEnum
+	to
+		output: Ecore!EEnum(
+				name <- input.name,
+				eLiterals <- input.eLiterals 
+								-> collect(literal| thisModule.generateImbLiteral(literal))
+			)
+}
+
+lazy rule generateImbLiteral {
+	from
+		input: Ecore!EEnumLiteral
+	to
+		output: Ecore!EEnumLiteral(
+				name <- input.name
+			)
+}
+
+lazy rule generateImbClass {
+	from
+		input: Ecore!EClass
+	to
+		output: Ecore!EClass(
+			name <- input.name,
+			eStructuralFeatures <- Set{id} 
+								-> union(input.eAttributes 
+									-> collect(attribute| thisModule.generateImbAttribute(attribute)))
+								-> union(input.eReferences
+									-> collect(reference| thisModule.generateImbReference(reference)))
+			),
+		id: Ecore!EAttribute(
+			name <- 'id',
+			eType <- stringType
+			),
+		stringType: Ecore!EDataType(
+				name <- 'EString'
+			)
+}
+
+lazy rule generateImbAttribute {
+	from
+		input: Ecore!EAttribute
+	to
+		output: Ecore!EAttribute(
+			name <- input.name,
+			eType <- input.eType
+			)
+}
+
+lazy rule generateImbReference {
+	from
+		input: Ecore!EReference
+	to
+		outpur: Ecore!EReference(
+			name <- input.name,
+			eType <- input.eType,
+			lowerBound <- input.lowerBound
+			)
+}
