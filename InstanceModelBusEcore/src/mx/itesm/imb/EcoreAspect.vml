@@ -1,0 +1,37 @@
+
+package $packageName;
+
+import org.eclipse.emf.common.notify.Notification;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.client.RestTemplate;
+
+public aspect EcoreAspect_$typeName {
+    private static RestTemplate restTemplate;
+
+    static {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
+        restTemplate = applicationContext.getBean("restTemplate", RestTemplate.class);
+    }
+
+	after(Notification notification) returning: execution (* ($packageName.$typeName).notifyChanged(..)) && args(notification) {
+		String message;
+		
+		message = null;
+		switch(notification.getEventType()) {
+			case Notification.SET:
+				message = "Set";
+				break;
+			case Notification.ADD:
+				message = "Add";
+				break;
+			case Notification.REMOVE:
+				message = "Remove";
+				break;
+		}
+		
+		if(message != null) {
+			System.out.println(message + ": " + notification.getFeature());
+		}
+	}
+}
