@@ -41,39 +41,48 @@ public aspect EcoreAspect_$typeName {
 		String message;
 		Object imbType;
 		Object newValue;
-		Method setIdMethod;
+		Object notifier;
+		Method idMethod;
 		String referenceName;
 		String containingClass;
 		EReference changeReference;
-		Method transformationMethod;
 		
 		message = null;
+		notifier = notification.getNotifier();
 		newValue = notification.getNewValue();
 		switch(notification.getEventType()) {
 			case Notification.SET:
-				message = "Set";
-				containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
+				try {
+					containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
+				
+					// Convert to appropriate Imb type
+					imbType = EcoreAspect_$typeName. getImbType(containingClass, notifier);
+				
+					// Send to the Imb
+					idMethod = notifier.getClass().getMethod("getId");
+					restTemplate.postForObject("$imbAddress" + "/update/{object}/{id}", imbType, Boolean.class, 
+							containingClass.toLowerCase(), idMethod.invoke(notifier));
+				} catch(Exception e) {
+					System.out.println("Error while updating: " + newValue + ", " + e.getMessage());
+				}
 				break;
 			case Notification.ADD:
-				message = "Add";
 				if(EReference.class.isAssignableFrom(notification.getFeature().getClass())) {
 					try {
 						changeReference = ((EReference) notification.getFeature());
 						referenceName = changeReference.getName();
 						// Set an ID for the newly created object
-						setIdMethod = Class.forName(changeReference.getEReferenceType().getInstanceClassName())
+						idMethod = Class.forName(changeReference.getEReferenceType().getInstanceClassName())
 											.getMethod("setId", new Class[]{Long.class});
-						setIdMethod.invoke(newValue, System.currentTimeMillis());
+						idMethod.invoke(newValue, System.currentTimeMillis());
 						
 						// Convert to the appropriate Imb type
-						transformationMethod = Class.forName("$packageName" + ".EcoreAspect_" + referenceName + "ItemProvider")
-								.getMethod("convertToImb" + referenceName, new Class[]{Class.forName("$typePackage" + "." + referenceName)});
-						imbType = transformationMethod.invoke(null, newValue);
+						imbType = EcoreAspect_$typeName. getImbType(referenceName, newValue);
 						
-						// Send to the Imb bus
-						restTemplate.put("$imbAddress" + "create/{object}", imbType, referenceName.toLowerCase());
+						// Send to the Imb
+						restTemplate.put("$imbAddress" + "/create/{object}", imbType, referenceName.toLowerCase());
 					} catch(Exception e) {
-						System.out.println("Error for Imb type associated with: " + newValue);
+						System.out.println("Error while adding: " + newValue + ", " + e.getMessage());
 					}
 				}
 				break;
@@ -86,6 +95,21 @@ public aspect EcoreAspect_$typeName {
 			System.out.println(message + ": " + notification.getFeature());
 		}
 	}
+	
+	/**
+	* Convert from an Ecore to an Imb type.
+	*/
+	private static Object getImbType(final String typeName, final Object typeInstance) throws Exception {
+		Object returnValue;
+		Method transformationMethod;
+		
+		transformationMethod = Class.forName("tl.provider" + ".EcoreAspect_" + typeName + "ItemProvider")
+									.getMethod("convertToImb" + typeName, new Class[]{Class.forName("tl" + "." + typeName)});
+		returnValue = transformationMethod.invoke(null, typeInstance);
+		
+		return returnValue;
+	}
+	
 	
 	#if ($generateHelperMethod)
 		#helperMethod($imbTypePackage $typeName.replace("ItemProvider", ""))
@@ -152,4 +176,5 @@ public aspect EcoreAspect_$typeName {
         return returnValue;
     }
     #end
+    
 }
