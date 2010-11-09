@@ -162,7 +162,6 @@ public class EcoreImbEditor {
                 .replace('/', '.');
 
         context = new VelocityContext();
-        context.put("imbTypes", imbTypes);
         context.put("typeName", typeName);
         context.put("packageName", packageName);
         context.put("typePackage", packageName.split("\\.")[0]);

@@ -9,9 +9,6 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 #end
 
-import java.util.List;
-import java.util.ArrayList;
-
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -24,22 +21,16 @@ import $typePackage.$typeName.replace("ItemProvider", "");
 #end
 
 public aspect EcoreAspect_$typeName {
-	private static List<String> imbTypes;
     private static RestTemplate restTemplate;
 
     static {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
         restTemplate = applicationContext.getBean("restTemplate", RestTemplate.class);
-        
-        imbTypes = new ArrayList<String>($imbTypes.size());
-        #foreach($imbType in $imbTypes)imbTypes.add("$imbType.getName().replace(".java", "")");
-        #end
-        
     }
 
 	after(Notification notification) returning: execution (* ($packageName.$typeName).notifyChanged(..)) && args(notification) {
-		String message;
 		Object imbType;
+		Object oldValue;
 		Object newValue;
 		Object notifier;
 		Method idMethod;
@@ -47,8 +38,8 @@ public aspect EcoreAspect_$typeName {
 		String containingClass;
 		EReference changeReference;
 		
-		message = null;
 		notifier = notification.getNotifier();
+		oldValue = notification.getOldValue();
 		newValue = notification.getNewValue();
 		switch(notification.getEventType()) {
 			case Notification.SET:
@@ -61,11 +52,12 @@ public aspect EcoreAspect_$typeName {
 					// Send to the Imb
 					idMethod = notifier.getClass().getMethod("getId");
 					restTemplate.postForObject("$imbAddress" + "/update/{object}/{id}", imbType, Boolean.class, 
-							containingClass.toLowerCase(), idMethod.invoke(notifier));
+						containingClass.toLowerCase(), idMethod.invoke(notifier));
 				} catch(Exception e) {
 					System.out.println("Error while updating: " + newValue + ", " + e.getMessage());
 				}
 				break;
+				
 			case Notification.ADD:
 				if(EReference.class.isAssignableFrom(notification.getFeature().getClass())) {
 					try {
@@ -86,13 +78,17 @@ public aspect EcoreAspect_$typeName {
 					}
 				}
 				break;
+				
 			case Notification.REMOVE:
-				message = "Remove";
+				try {
+					containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
+					idMethod = oldValue.getClass().getMethod("getId");
+					restTemplate.delete("$imbAddress" + "/delete/{object}/{id}", 
+						containingClass.toLowerCase(), idMethod.invoke(oldValue));
+				} catch(Exception e) {
+					System.out.println("Error while removing: " + oldValue + ", " + e.getMessage());
+				}
 				break;
-		}
-		
-		if(message != null) {
-			System.out.println(message + ": " + notification.getFeature());
 		}
 	}
 	
