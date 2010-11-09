@@ -30,7 +30,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.put("$imbAddress" + "create/{object}", 
+			restTemplate.put("$imbAddress" + "/create/{object}", 
 				$controllerType.toString()_Roo_Imb. convertToImb$type (object), "$type.toLowerCase()");
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -40,7 +40,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.postForObject("$imbAddress" + "update/{object}/{id}", 
+			restTemplate.postForObject("$imbAddress" + "/update/{object}/{id}", 
 				$controllerType.toString()_Roo_Imb. convertToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getId());
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -50,7 +50,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after(Long id, Integer page, Integer size, Model model) returning : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
-			restTemplate.delete("$imbAddress" + "delete/{object}/{id}", "$type.toLowerCase()", id);
+			restTemplate.delete("$imbAddress" + "/delete/{object}/{id}", "$type.toLowerCase()", id);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
