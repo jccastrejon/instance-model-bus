@@ -97,7 +97,7 @@ public aspect $controllerType.toString()_Roo_Imb {
                         }
                     }
 
-                    if (returnValueSetMethod != null) {
+                    if ((returnValueSetMethod != null) && (objectMethodReturnValue != null)) {
                         // Enum
                         if (method.getReturnType().isEnum()) {
                             returnValueSetMethod.invoke(
