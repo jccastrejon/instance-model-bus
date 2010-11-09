@@ -1,29 +1,68 @@
 
 package $packageName;
 
+import java.lang.reflect.Method;
+
+#if ($generateHelperMethod)
+import java.util.Date;
+import java.util.GregorianCalendar;
+import javax.xml.datatype.DatatypeFactory;
+#end
+
+import java.util.List;
+import java.util.ArrayList;
+
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
+#if ($generateHelperMethod)
+import $typePackage.$typeName.replace("ItemProvider", "");
+#end
+
 public aspect EcoreAspect_$typeName {
+	private static List<String> imbTypes;
     private static RestTemplate restTemplate;
 
     static {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
         restTemplate = applicationContext.getBean("restTemplate", RestTemplate.class);
+        
+        imbTypes = new ArrayList<String>($imbTypes.size());
+        #foreach($imbType in $imbTypes)imbTypes.add("$imbType.getName().replace(".java", "")");
+        #end
+        
     }
 
 	after(Notification notification) returning: execution (* ($packageName.$typeName).notifyChanged(..)) && args(notification) {
 		String message;
+		Object newValue;
+		Method setIdMethod;
+		String containingClass;
 		
 		message = null;
+		newValue = notification.getNewValue();
 		switch(notification.getEventType()) {
 			case Notification.SET:
 				message = "Set";
+				containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
 				break;
 			case Notification.ADD:
 				message = "Add";
+				if(EReference.class.isAssignableFrom(notification.getFeature().getClass())) {
+					try {
+						// Set an ID for the newly created object
+						setIdMethod = Class.forName(
+										((EReference)notification.getFeature()).getEReferenceType().getInstanceClassName())
+											.getMethod("setId", new Class[]{String.class});
+						setIdMethod.invoke(newValue, "123");
+					} catch(Exception e) {
+						System.out.println("Error seting id for: " + newValue);
+					}
+				}
 				break;
 			case Notification.REMOVE:
 				message = "Remove";
@@ -34,4 +73,70 @@ public aspect EcoreAspect_$typeName {
 			System.out.println(message + ": " + notification.getFeature());
 		}
 	}
+	
+	#if ($generateHelperMethod)
+		#helperMethod($imbTypePackage $typeName.replace("ItemProvider", ""))
+	#end
+	
+	#macro (helperMethod $imbTypePackage $type)
+	
+	/**
+	* Helper method to convert an object to an instance 
+	* that can be used for communications with the IMB Bus.
+	*/
+	public static $imbTypePackage.$type convertToImb$type($type object) {
+        Method returnValueSetMethod;
+        Object objectMethodReturnValue;
+        $imbTypePackage.$type returnValue;
+
+        try {
+            returnValue = new $imbTypePackage.$type();
+
+            for (Method method : object.getClass().getDeclaredMethods()) {
+                if (method.getName().startsWith("get")) {
+                    returnValueSetMethod = null;
+                    objectMethodReturnValue = method.invoke(object, (Object[]) new Class<?>[0]);
+                    for (Method returnValueMethod : $imbTypePackage.$type. class.getDeclaredMethods()) {
+                        if (returnValueMethod.getName().equals(method.getName().replace("get", "set"))) {
+                            returnValueSetMethod = returnValueMethod;
+                            break;
+                        }
+                    }
+
+                    if (returnValueSetMethod != null) {
+                        // Enum
+                        if (method.getReturnType().isEnum()) {
+                            returnValueSetMethod.invoke(
+                                    returnValue,
+                                    returnValueSetMethod.getParameterTypes()[0].getDeclaredMethod("valueOf",
+                                            String.class)
+                                            .invoke(null, objectMethodReturnValue.toString().toUpperCase()));
+                        }
+
+                        // Date
+                        else if (Date.class.isAssignableFrom(method.getReturnType())) {
+                            GregorianCalendar calendar = new GregorianCalendar();
+                            calendar.setTime((Date) objectMethodReturnValue);
+                            returnValueSetMethod.invoke(returnValue, DatatypeFactory.newInstance()
+                                    .newXMLGregorianCalendar(calendar));
+                        }
+
+                        // Simple types
+                        else {
+                            returnValueSetMethod.invoke(returnValue, objectMethodReturnValue);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            if (e.getCause() != null) {
+                e.getCause().printStackTrace();
+            }
+            e.printStackTrace();
+            returnValue = null;
+        }
+
+        return returnValue;
+    }
+    #end
 }

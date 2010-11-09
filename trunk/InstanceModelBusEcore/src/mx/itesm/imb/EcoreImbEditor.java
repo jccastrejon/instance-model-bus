@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -33,8 +34,8 @@ public class EcoreImbEditor {
 
     public static void main(String[] args) {
         // 0: ecoreProject, 1: busProject, 2: templateProject
-        EcoreImbEditor.generateProvidersAspects(new File(args[0]));
         EcoreImbEditor.configureRestTemplate(new File(args[0]), new File(args[1]), new File(args[2]));
+        EcoreImbEditor.generateProvidersAspects(new File(args[0]));
     }
 
     /**
@@ -44,10 +45,19 @@ public class EcoreImbEditor {
     @SuppressWarnings("unchecked")
     public static void generateProvidersAspects(final File ecoreProject) {
         File provider;
-        Iterator<File> providers;
+        List<File> imbTypes;
+        Iterator<File> files;
+
+        // Get imb types
+        files = FileUtils.iterateFiles(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/src/imb"),
+                new String[] { "java" }, true);
+        imbTypes = new ArrayList<File>();
+        while (files.hasNext()) {
+            imbTypes.add(files.next());
+        }
 
         // Get providers files
-        providers = FileUtils.iterateFiles(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit"),
+        files = FileUtils.iterateFiles(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit"),
                 new IOFileFilter() {
 
                     @Override
@@ -61,10 +71,10 @@ public class EcoreImbEditor {
                     }
                 }, TrueFileFilter.INSTANCE);
 
-        while (providers.hasNext()) {
+        while (files.hasNext()) {
             try {
-                provider = providers.next();
-                EcoreImbEditor.writeEcoreAspect(provider);
+                provider = files.next();
+                EcoreImbEditor.writeEcoreAspect(provider, imbTypes);
                 System.out.println("Aspect for " + provider + " successfully generated");
             } catch (Exception e) {
                 System.out.println("Error generating aspect: " + e.getMessage());
@@ -136,10 +146,11 @@ public class EcoreImbEditor {
 
     /**
      * 
-     * @param typeName
+     * @param provider
+     * @param imbTypes
      * @throws IOException
      */
-    private static void writeEcoreAspect(final File provider) throws IOException {
+    private static void writeEcoreAspect(final File provider, final List<File> imbTypes) throws IOException {
         Writer writer;
         String typeName;
         String packageName;
@@ -151,8 +162,23 @@ public class EcoreImbEditor {
                 .replace('/', '.');
 
         context = new VelocityContext();
+        context.put("imbTypes", imbTypes);
         context.put("typeName", typeName);
         context.put("packageName", packageName);
+        context.put("typePackage", packageName.split("\\.")[0]);
+
+        for (File imbType : imbTypes) {
+            if (imbType.getName().equals(typeName.replace("ItemProvider", "") + ".java")) {
+                context.put("generateHelperMethod", true);
+                context.put(
+                        "imbTypePackage",
+                        imbType.getPath()
+                                .substring(imbType.getPath().indexOf("src") + "src".length() + 1,
+                                        imbType.getPath().indexOf(typeName.replace("ItemProvider", "")) - 1)
+                                .replace(File.separatorChar, '.'));
+                break;
+            }
+        }
 
         writer = new FileWriter(new File(provider.getParentFile(), "EcoreAspect_" + typeName + ".aj"));
         EcoreImbEditor.aspectTemplate.merge(context, writer);
