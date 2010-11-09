@@ -82,10 +82,10 @@ lazy rule generateImbClass {
 			),
 		id: Ecore!EAttribute(
 			name <- 'id',
-			eType <- stringType
+			eType <- longType
 			),
-		stringType: Ecore!EDataType(
-				name <- 'EString'
+		longType: Ecore!EDataType(
+				name <- 'ELongObject'
 			)
 }
 

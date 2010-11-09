@@ -39,9 +39,13 @@ public aspect EcoreAspect_$typeName {
 
 	after(Notification notification) returning: execution (* ($packageName.$typeName).notifyChanged(..)) && args(notification) {
 		String message;
+		Object imbType;
 		Object newValue;
 		Method setIdMethod;
+		String referenceName;
 		String containingClass;
+		EReference changeReference;
+		Method transformationMethod;
 		
 		message = null;
 		newValue = notification.getNewValue();
@@ -54,13 +58,22 @@ public aspect EcoreAspect_$typeName {
 				message = "Add";
 				if(EReference.class.isAssignableFrom(notification.getFeature().getClass())) {
 					try {
+						changeReference = ((EReference) notification.getFeature());
+						referenceName = changeReference.getName();
 						// Set an ID for the newly created object
-						setIdMethod = Class.forName(
-										((EReference)notification.getFeature()).getEReferenceType().getInstanceClassName())
-											.getMethod("setId", new Class[]{String.class});
-						setIdMethod.invoke(newValue, "123");
+						setIdMethod = Class.forName(changeReference.getEReferenceType().getInstanceClassName())
+											.getMethod("setId", new Class[]{Long.class});
+						setIdMethod.invoke(newValue, System.currentTimeMillis());
+						
+						// Convert to the appropriate Imb type
+						transformationMethod = Class.forName("$packageName" + ".EcoreAspect_" + referenceName + "ItemProvider")
+								.getMethod("convertToImb" + referenceName, new Class[]{Class.forName("$typePackage" + "." + referenceName)});
+						imbType = transformationMethod.invoke(null, newValue);
+						
+						// Send to the Imb bus
+						restTemplate.put("$imbAddress" + "create/{object}", imbType, referenceName.toLowerCase());
 					} catch(Exception e) {
-						System.out.println("Error seting id for: " + newValue);
+						System.out.println("Error for Imb type associated with: " + newValue);
 					}
 				}
 				break;
@@ -103,7 +116,7 @@ public aspect EcoreAspect_$typeName {
                         }
                     }
 
-                    if (returnValueSetMethod != null) {
+                    if ((returnValueSetMethod != null) && (objectMethodReturnValue != null)) {
                         // Enum
                         if (method.getReturnType().isEnum()) {
                             returnValueSetMethod.invoke(
