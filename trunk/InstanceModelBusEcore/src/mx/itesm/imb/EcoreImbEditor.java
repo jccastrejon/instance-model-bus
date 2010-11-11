@@ -165,7 +165,7 @@ public class EcoreImbEditor {
         context.put("typeName", typeName);
         context.put("packageName", packageName);
         context.put("typePackage", packageName.split("\\.")[0]);
-        context.put("imbAddress", "http://localhost:9090/imbtl");
+        context.put("imbAddress", "http://localhost:8080/tlbus-0.1.0.BUILD-SNAPSHOT");
 
         for (File imbType : imbTypes) {
             if (imbType.getName().equals(typeName.replace("ItemProvider", "") + ".java")) {

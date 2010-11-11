@@ -340,7 +340,7 @@ public class ImbOperationsImpl implements ImbOperations {
         context.put("imbTypePackage", imbTypePackage.toString());
 
         // TODO: Change to configuration file
-        context.put("imbAddress", "http://localhost:9090/imbtl");
+        context.put("imbAddress", "http://localhost:8080/tlbus-0.1.0.BUILD-SNAPSHOT");
 
         writer = new FileWriter(new File(controllerPath, controllerName + "_Roo_Imb.aj"));
         ImbOperationsImpl.aspectTemplate.merge(context, writer);

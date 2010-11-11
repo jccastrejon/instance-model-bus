@@ -9,6 +9,8 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 #end
 
+import java.net.ConnectException;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -37,6 +39,7 @@ public aspect EcoreAspect_$typeName {
 		String referenceName;
 		String containingClass;
 		EReference changeReference;
+		String[] referenceNameParts;
 		
 		notifier = notification.getNotifier();
 		oldValue = notification.getOldValue();
@@ -51,10 +54,13 @@ public aspect EcoreAspect_$typeName {
 				
 					// Send to the Imb
 					idMethod = notifier.getClass().getMethod("getId");
-					restTemplate.postForObject("$imbAddress" + "/update/{object}/{id}", imbType, Boolean.class, 
+					restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/{id}", imbType, Boolean.class, 
 						containingClass.toLowerCase(), idMethod.invoke(notifier));
 				} catch(Exception e) {
-					System.out.println("Error while updating: " + newValue + ", " + e.getMessage());
+					// Retry connection
+					if(ConnectException.class.isAssignableFrom(e.getClass())) {
+						System.out.println("Unable to communicate with the bus, will try again later");
+					}
 				}
 				break;
 				
@@ -72,21 +78,30 @@ public aspect EcoreAspect_$typeName {
 						imbType = EcoreAspect_$typeName. getImbType(referenceName, newValue);
 						
 						// Send to the Imb
-						restTemplate.put("$imbAddress" + "/create/{object}", imbType, referenceName.toLowerCase());
+						restTemplate.put("$imbAddress" + "/imb/create/{object}", imbType, referenceName.toLowerCase());
 					} catch(Exception e) {
-						System.out.println("Error while adding: " + newValue + ", " + e.getMessage());
+						// Retry connection
+						if(ConnectException.class.isAssignableFrom(e.getClass())) {
+							System.out.println("Unable to communicate with the bus, will try again later");
+						}
 					}
 				}
 				break;
 				
 			case Notification.REMOVE:
 				try {
-					containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
+					referenceName = oldValue.getClass().getName();
+					referenceName = referenceName.replace("Impl", "");
+					referenceNameParts = referenceName.split("\\.");
+					referenceName = referenceNameParts[referenceNameParts.length-1].toLowerCase();
 					idMethod = oldValue.getClass().getMethod("getId");
-					restTemplate.delete("$imbAddress" + "/delete/{object}/{id}", 
-						containingClass.toLowerCase(), idMethod.invoke(oldValue));
+					restTemplate.delete("$imbAddress" + "/imb/delete/{object}/{id}", 
+						referenceName, idMethod.invoke(oldValue));
 				} catch(Exception e) {
-					System.out.println("Error while removing: " + oldValue + ", " + e.getMessage());
+					// Retry connection
+					if(ConnectException.class.isAssignableFrom(e.getClass())) {
+						System.out.println("Unable to communicate with the bus, will try again later");
+					}
 				}
 				break;
 		}
