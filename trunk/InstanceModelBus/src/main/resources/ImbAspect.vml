@@ -1,6 +1,7 @@
-
 package $controllerPackage;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -8,13 +9,18 @@ import java.net.ConnectException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import $typePackage.$type;
+import $typePackage. LocalEntity;
+import $typePackage. RemoteEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +33,52 @@ public aspect $controllerType.toString()_Roo_Imb {
 
     @Autowired
     private RestTemplate restTemplate;
+    
+    @Autowired
+    Marshaller marshaller;
+
+    @Autowired
+    Unmarshaller unmarshaller;
+    
+    
+    // Keep the original state of an instance before it is edited
+    after(Long id, Model model) returning :
+    	execution (* ($controllerPackage.$controllerType).updateForm(..)) && args(id, model) {
+    	Object imbType;
+    	LocalEntity localEntity;
+    	ByteArrayOutputStream outputStream;
+    	
+    	try {
+    		imbType = $controllerType.toString()_Roo_Imb. convertToImb$type ($type. find$type(id));
+    		outputStream = new ByteArrayOutputStream();
+	    	marshaller.marshal(imbType, new StreamResult(outputStream));
+    	
+    		// We only keep a local copy of any type at any given time 
+    		$controllerType.toString()_Roo_Imb. removeLocalEntities();
+    	
+    		// Save new local copy
+    		localEntity = new LocalEntity();
+    		localEntity.setEntityName("$type");
+    		localEntity.setEntityId(id);
+	    	localEntity.setValidity(new Date());
+    		localEntity.setEntity(new String(outputStream.toByteArray(), "UTF-8"));
+    		localEntity.persist();
+    	} catch(Exception e) {
+    		System.out.println("Unable to register local copy of $type: " + e.getMessage());
+    	}
+    }
+    
+    // Discard original states if the user goes to another page besides edition
+    after() returning :
+    	execution (* ($controllerPackage.$controllerType).createForm(..)) {
+    	$controllerType.toString()_Roo_Imb. removeLocalEntities();
+    }
+    
+    after() returning :
+    	execution (* ($controllerPackage.$controllerType).list(..)) {
+    	$controllerType.toString()_Roo_Imb. removeLocalEntities();
+    }
+    
 
 	// Communication from the Application to the Imb bus
 	
@@ -143,5 +195,14 @@ public aspect $controllerType.toString()_Roo_Imb {
         }
 
         return returnValue;
+    }
+    
+    /**
+    * Remove all local states
+    */
+    private static void removeLocalEntities() {
+    	for(LocalEntity localEntity : LocalEntity.findAllLocalEntitys()) {
+    		localEntity.remove();
+    	}
     }
 }
