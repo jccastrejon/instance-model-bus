@@ -4,6 +4,7 @@ package $controllerPackage;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.net.ConnectException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.datatype.DatatypeFactory;
@@ -11,6 +12,7 @@ import javax.xml.datatype.DatatypeFactory;
 import $typePackage.$type;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
+@Configurable
 public aspect $controllerType.toString()_Roo_Imb {
 
     @Autowired
@@ -30,48 +33,57 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.put("$imbAddress" + "/create/{object}", 
+			restTemplate.put("$imbAddress" + "/imb/create/{object}", 
 				$controllerType.toString()_Roo_Imb. convertToImb$type (object), "$type.toLowerCase()");
 		} catch(Exception e) {
-			e.printStackTrace();
+			// Retry connection
+			if(ConnectException.class.isAssignableFrom(e.getClass())) {
+				System.out.println("Unable to communicate with the bus, will try again later");
+			}
 		}
 	}
 	
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.postForObject("$imbAddress" + "/update/{object}/{id}", 
+			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/{id}", 
 				$controllerType.toString()_Roo_Imb. convertToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getId());
 		} catch(Exception e) {
-			e.printStackTrace();
+			// Retry connection
+			if(ConnectException.class.isAssignableFrom(e.getClass())) {
+				System.out.println("Unable to communicate with the bus, will try again later");
+			}
 		}
 	}
 	
 	after(Long id, Integer page, Integer size, Model model) returning : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
-			restTemplate.delete("$imbAddress" + "/delete/{object}/{id}", "$type.toLowerCase()", id);
+			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/{id}", "$type.toLowerCase()", id);
 		} catch(Exception e) {
-			e.printStackTrace();
+			// Retry connection
+			if(ConnectException.class.isAssignableFrom(e.getClass())) {
+				System.out.println("Unable to communicate with the bus, will try again later");
+			}
 		}
 	}
 	
 	// Communication from the Imb bus to the Application
 	
-    @RequestMapping(value = "create/$type.toLowerCase()", method = RequestMethod.PUT)
-    public void ItemController.imbCreate(@RequestBody imb.domain.tl.itesm.mx.Item item) {
-        System.out.println("Creando: " + item);
+    @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
+    public void ItemController.imbCreate(@RequestBody $imbTypePackage.$type object) {
+        System.out.println("Creando en roo: " + object);
     }
     
-    @RequestMapping(value = "update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
-    public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody imb.domain.tl.itesm.mx.Item item) {
-        System.out.println("Actualizando: " + id + ", " + item);
+    @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
+    public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
+        System.out.println("Actualizando en roo: " + id + ", " + object);
         return true;
     }
     
-    @RequestMapping(value = "delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
-    public void ItemController.imbDelete(@PathVariable("id") Long id, @RequestBody imb.domain.tl.itesm.mx.Item item) {
-        System.out.println("Borrando: " + id + ", " + item);
+    @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
+    public void ItemController.imbDelete(@PathVariable("id") Long id) {
+        System.out.println("Borrando en roo: " + id);
     }
 	
 	/**
