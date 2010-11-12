@@ -1,5 +1,11 @@
 package $controllerPackage;
 
+import $typePackage. Tool;
+
+import java.net.ConnectException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,22 +27,67 @@ public class ImbBusController {
 
 	#macro (createEntityMethods $type $imbTypePackage)
 
-    @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
-    public void create$type(@RequestBody $imbTypePackage.$type object) {
-        System.out.println("Creando: " + object);
+    @RequestMapping(value = "/create/$type.toLowerCase()/{toolName}", method = RequestMethod.PUT)
+    public void create$type(@PathVariable("toolName") String toolName, @RequestBody $imbTypePackage.$type object, HttpServletRequest request) {
+    	// Send notifications to the appropriate tools
+        for(Tool tool : Tool.findAllTools()) {
+        	try {
+        		if(this.notify(toolName, tool, request)) {
+					restTemplate.put(tool.getIpAddress() + "/$type.toLowerCase()s/create/{object}", object, "$type.toLowerCase()");
+				}
+			} catch(Exception e) {
+				// Retry connection
+				if(ConnectException.class.isAssignableFrom(e.getClass())) {
+					System.out.println("Unable to communicate with the bus, will try again later");
+				}
+			}
+        }
     }
     
-    @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
-    public boolean update$type(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
-        System.out.println("Actualizando: " + id + ", " + object);
+    @RequestMapping(value = "/update/$type.toLowerCase()/{toolName}/{id}", method = RequestMethod.POST)
+    public boolean update$type(@PathVariable("id") Long id, @PathVariable("toolName") String toolName, 
+    							@RequestBody $imbTypePackage.$type object, HttpServletRequest request) {
+    	// Send notifications to the appropriate tools
+        for(Tool tool : Tool.findAllTools()) {
+        	try {
+        		if(this.notify(toolName, tool, request)) {
+					restTemplate.postForObject(tool.getIpAddress() + "/$type.toLowerCase()s/update/{object}/{id}", object, 
+												Boolean.class, "$type.toLowerCase()", object.getId());
+				}
+			} catch(Exception e) {
+				// Retry connection
+				if(ConnectException.class.isAssignableFrom(e.getClass())) {
+					System.out.println("Unable to communicate with the bus, will try again later");
+				}
+			}
+        }
+        
         return true;
     }
     
-    @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
-    public void delete$type(@PathVariable("id") Long id) {
-        System.out.println("Borrando: " + id);
+    @RequestMapping(value = "/delete/$type.toLowerCase()/{toolName}/{id}", method = RequestMethod.DELETE)
+    public void delete$type(@PathVariable("id") Long id, @PathVariable("toolName") String toolName, HttpServletRequest request) {
+    	// Send notifications to the appropriate tools
+        for(Tool tool : Tool.findAllTools()) {
+        	try {
+        		if(this.notify(toolName, tool, request)) {
+					restTemplate.delete(tool.getIpAddress() + "/delete/{object}/{id}", "$type.toLowerCase()", id);
+				}
+			} catch(Exception e) {
+				// Retry connection
+				if(ConnectException.class.isAssignableFrom(e.getClass())) {
+					System.out.println("Unable to communicate with the bus, will try again later");
+				}
+			}
+        }
     }
 
 	#end
 	
+    /**
+    * Decide whether or a tool should be notified of a change
+    */
+    private boolean notify(final String toolName, final Tool tool, final HttpServletRequest request) {
+    	return !((tool.getIpAddress().equals(request.getRemoteAddr())) && (tool.getName().toString().equals(toolName)));
+    }
 }

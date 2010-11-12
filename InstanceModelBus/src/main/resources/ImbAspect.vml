@@ -3,6 +3,7 @@ package $controllerPackage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.net.ConnectException;
@@ -49,7 +50,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     	ByteArrayOutputStream outputStream;
     	
     	try {
-    		imbType = $controllerType.toString()_Roo_Imb. convertToImb$type ($type. find$type(id));
+    		imbType = $controllerType.toString()_Roo_Imb. transformToImb$type ($type. find$type(id));
     		outputStream = new ByteArrayOutputStream();
 	    	marshaller.marshal(imbType, new StreamResult(outputStream));
     	
@@ -85,8 +86,8 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.put("$imbAddress" + "/imb/create/{object}", 
-				$controllerType.toString()_Roo_Imb. convertToImb$type (object), "$type.toLowerCase()");
+			restTemplate.put("$imbAddress" + "/imb/create/{object}/Spring", 
+				$controllerType.toString()_Roo_Imb. transformToImb$type (object), "$type.toLowerCase()");
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -98,8 +99,8 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
 		try {
-			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/{id}", 
-				$controllerType.toString()_Roo_Imb. convertToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getId());
+			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Spring/{id}", 
+				$controllerType.toString()_Roo_Imb. transformToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getId());
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -111,7 +112,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after(Long id, Integer page, Integer size, Model model) returning : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
-			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/{id}", "$type.toLowerCase()", id);
+			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Spring/{id}", "$type.toLowerCase()", id);
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -124,37 +125,59 @@ public aspect $controllerType.toString()_Roo_Imb {
 	
     @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
     public void ItemController.imbCreate(@RequestBody $imbTypePackage.$type object) {
-        System.out.println("Creando en roo: " + object);
+        $type modelObject;
+        
+        modelObject = $controllerType.toString()_Roo_Imb. transformFromImb$type (object);
+        modelObject.persist();
     }
     
     @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
     public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
-        System.out.println("Actualizando en roo: " + id + ", " + object);
+        $type modelObject;
+        
+        modelObject = $controllerType.toString()_Roo_Imb. transformFromImb$type (object);
+        modelObject.merge();
         return true;
     }
     
     @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
     public void ItemController.imbDelete(@PathVariable("id") Long id) {
-        System.out.println("Borrando en roo: " + id);
+        $type. find$type (id).remove();
+    }
+    
+    /**
+    * Helper method to transform from an IMB Bus object
+    * to a Spring Roo instance.
+    */
+    public static $type transformFromImb$type($imbTypePackage.$type object) {
+    	return ($type)$controllerType.toString()_Roo_Imb. transformObjects(object, $type. class);
     }
 	
 	/**
-	* Helper method to convert an object to an instance 
+	* Helper method to transform an Spring Roo object to an instance 
 	* that can be used for communications with the IMB Bus.
 	*/
-	public static $imbTypePackage.$type convertToImb$type($type object) {
-        Method returnValueSetMethod;
+	public static $imbTypePackage.$type transformToImb$type($type object) {
+        return ($imbTypePackage.$type)$controllerType.toString()_Roo_Imb. transformObjects(object, $imbTypePackage.$type. class);
+    }
+    
+    /**
+    * Transform between object representations
+    */
+    private static Object transformObjects(final Object fromObject, final Class<?> toClass) {
+    	Object enumValue;
+    	Object returnValue;
+    	Method enumValueOf;
+    	Method returnValueSetMethod;
         Object objectMethodReturnValue;
-        $imbTypePackage.$type returnValue;
-
+    	
         try {
-            returnValue = new $imbTypePackage.$type();
-
-            for (Method method : object.getClass().getDeclaredMethods()) {
+            returnValue = toClass.newInstance();
+            for (Method method : fromObject.getClass().getDeclaredMethods()) {
                 if (method.getName().startsWith("get")) {
                     returnValueSetMethod = null;
-                    objectMethodReturnValue = method.invoke(object, (Object[]) new Class<?>[0]);
-                    for (Method returnValueMethod : $imbTypePackage.$type. class.getDeclaredMethods()) {
+                    objectMethodReturnValue = method.invoke(fromObject, (Object[]) new Class<?>[0]);
+                    for (Method returnValueMethod : toClass.getDeclaredMethods()) {
                         if (returnValueMethod.getName().equals(method.getName().replace("get", "set"))) {
                             returnValueSetMethod = returnValueMethod;
                             break;
@@ -164,11 +187,16 @@ public aspect $controllerType.toString()_Roo_Imb {
                     if ((returnValueSetMethod != null) && (objectMethodReturnValue != null)) {
                         // Enum
                         if (method.getReturnType().isEnum()) {
-                            returnValueSetMethod.invoke(
-                                    returnValue,
-                                    returnValueSetMethod.getParameterTypes()[0].getDeclaredMethod("valueOf",
-                                            String.class)
-                                            .invoke(null, objectMethodReturnValue.toString().toUpperCase()));
+                        	enumValue = null;
+                        	enumValueOf = returnValueSetMethod.getParameterTypes()[0].getDeclaredMethod("values");
+                        	for(Object value : (Object[])enumValueOf.invoke(null)) {
+                        		if(value.toString().toUpperCase().equals(objectMethodReturnValue.toString().toUpperCase())) {
+                        			enumValue = value;
+                        			break;
+                        		}
+                        	}
+                        	
+                            returnValueSetMethod.invoke(returnValue, enumValue);
                         }
 
                         // Date
@@ -177,6 +205,11 @@ public aspect $controllerType.toString()_Roo_Imb {
                             calendar.setTime((Date) objectMethodReturnValue);
                             returnValueSetMethod.invoke(returnValue, DatatypeFactory.newInstance()
                                     .newXMLGregorianCalendar(calendar));
+                        }
+                        
+                        // Calendar
+                        else if(Calendar.class.isAssignableFrom(method.getReturnType())) {
+                        	returnValueSetMethod.invoke(returnValue, ((Calendar)objectMethodReturnValue).getTime());
                         }
 
                         // Simple types
@@ -187,13 +220,10 @@ public aspect $controllerType.toString()_Roo_Imb {
                 }
             }
         } catch (Exception e) {
-            if (e.getCause() != null) {
-                e.getCause().printStackTrace();
-            }
-            e.printStackTrace();
+        	System.out.println("Unable to transform from: " + fromObject + ", to: " + toClass + ": " + e.getMessage());
             returnValue = null;
         }
-
+        
         return returnValue;
     }
     
