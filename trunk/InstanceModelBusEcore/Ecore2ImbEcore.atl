@@ -81,7 +81,7 @@ lazy rule generateImbClass {
 									-> collect(reference| thisModule.generateImbReference(reference)))
 			),
 		id: Ecore!EAttribute(
-			name <- 'id',
+			name <- 'imbId',
 			eType <- longType
 			),
 		longType: Ecore!EDataType(

@@ -3,10 +3,13 @@ package $controllerPackage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.net.ConnectException;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.net.ConnectException;
+import java.util.Random;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -30,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 @Configurable
-public aspect $controllerType.toString()_Roo_Imb {
+privileged aspect $controllerType.toString()_Roo_Imb {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -41,6 +44,27 @@ public aspect $controllerType.toString()_Roo_Imb {
     @Autowired
     Unmarshaller unmarshaller;
     
+    
+    // Imb Id
+    private Long $type. imbId;
+    
+    public Long $type. getImbId() {
+    	return this.imbId;
+    }
+    
+    public void $type. setImbId(final Long imbId) {
+    	this.imbId = imbId;
+    }
+    
+    public static $type $type. findByImbId(Long imbId) {
+        TypedQuery<$type> query;
+        EntityManager entityManager;        
+        
+        entityManager = Item.entityManager();
+        query = entityManager.createQuery("SELECT $type FROM $type AS object WHERE object.imbId = :imbId", $type. class);
+        query.setParameter("imbId", imbId);
+        return query.getSingleResult();
+    }
     
     // Keep the original state of an instance before it is edited
     after(Long id, Model model) returning :
@@ -86,6 +110,10 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).create(..)) && args(object, result, model, request) {
 		try {
+			// Set IMB Id before communicating with the IMB bus
+			object.setImbId(System.currentTimeMillis() + new Random().nextInt());
+			object.merge();
+		
 			restTemplate.put("$imbAddress" + "/imb/create/{object}/Spring", 
 				$controllerType.toString()_Roo_Imb. transformToImb$type (object), "$type.toLowerCase()");
 		} catch(Exception e) {
@@ -100,7 +128,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
 		try {
 			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Spring/{id}", 
-				$controllerType.toString()_Roo_Imb. transformToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getId());
+				$controllerType.toString()_Roo_Imb. transformToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getImbId());
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -112,7 +140,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 	after(Long id, Integer page, Integer size, Model model) returning : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
-			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Spring/{id}", "$type.toLowerCase()", id);
+			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Spring/{id}", "$type.toLowerCase()", $type. find$type (id).getImbId());
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -133,16 +161,21 @@ public aspect $controllerType.toString()_Roo_Imb {
     
     @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
     public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
-        $type modelObject;
+        $type remoteObject;
+        $type localObject;
         
-        modelObject = $controllerType.toString()_Roo_Imb. transformFromImb$type (object);
-        modelObject.merge();
+        remoteObject = $controllerType.toString()_Roo_Imb. transformFromImb$type (object);
+        localObject = $type. findByImbId(remoteObject.getImbId());
+        
+        // TODO: Concurrency controls
+        
+        localObject.merge();
         return true;
     }
     
     @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
     public void ItemController.imbDelete(@PathVariable("id") Long id) {
-        $type. find$type (id).remove();
+        $type. findByImbId(id).remove();
     }
     
     /**

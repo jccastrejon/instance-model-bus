@@ -267,9 +267,9 @@ public class ImbOperationsImpl implements ImbOperations {
                         }
                     } else {
                         outputContents.add(line);
-                        // Type Id
+                        // IMB Id
                         if (line.contains("<xs:sequence")) {
-                            outputContents.add("<xs:element name=\"id\" type=\"xs:long\" minOccurs=\"0\"/>");
+                            outputContents.add("<xs:element name=\"imbId\" type=\"xs:long\" minOccurs=\"0\"/>");
                         }
                     }
                 }

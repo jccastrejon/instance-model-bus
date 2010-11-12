@@ -10,6 +10,7 @@ import javax.xml.datatype.DatatypeFactory;
 #end
 
 import java.net.ConnectException;
+import java.util.Random;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EReference;
@@ -50,10 +51,10 @@ public aspect EcoreAspect_$typeName {
 					try {
 						changeReference = ((EReference) notification.getFeature());
 						referenceName = changeReference.getName();
-						// Set an ID for the newly created object
+						// Set IMB Id
 						idMethod = Class.forName(changeReference.getEReferenceType().getInstanceClassName())
-											.getMethod("setId", new Class[]{Long.class});
-						idMethod.invoke(newValue, System.currentTimeMillis());
+											.getMethod("setImbId", new Class[]{Long.class});
+						idMethod.invoke(newValue, System.currentTimeMillis() + new Random().nextInt());
 						
 						// Convert to the appropriate Imb type
 						imbType = EcoreAspect_$typeName. getImbType(referenceName, newValue);
@@ -77,7 +78,7 @@ public aspect EcoreAspect_$typeName {
 					imbType = EcoreAspect_$typeName. getImbType(containingClass, notifier);
 				
 					// Send to the Imb
-					idMethod = notifier.getClass().getMethod("getId");
+					idMethod = notifier.getClass().getMethod("getImbId");
 					restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Eclipse/{id}", imbType, Boolean.class, 
 						containingClass.toLowerCase(), idMethod.invoke(notifier));
 				} catch(Exception e) {
@@ -94,7 +95,7 @@ public aspect EcoreAspect_$typeName {
 					referenceName = referenceName.replace("Impl", "");
 					referenceNameParts = referenceName.split("\\.");
 					referenceName = referenceNameParts[referenceNameParts.length-1].toLowerCase();
-					idMethod = oldValue.getClass().getMethod("getId");
+					idMethod = oldValue.getClass().getMethod("getImbId");
 					restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Eclipse/{id}", 
 						referenceName, idMethod.invoke(oldValue));
 				} catch(Exception e) {
