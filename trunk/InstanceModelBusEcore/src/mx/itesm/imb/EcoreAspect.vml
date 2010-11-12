@@ -45,25 +45,6 @@ public aspect EcoreAspect_$typeName {
 		oldValue = notification.getOldValue();
 		newValue = notification.getNewValue();
 		switch(notification.getEventType()) {
-			case Notification.SET:
-				try {
-					containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
-				
-					// Convert to appropriate Imb type
-					imbType = EcoreAspect_$typeName. getImbType(containingClass, notifier);
-				
-					// Send to the Imb
-					idMethod = notifier.getClass().getMethod("getId");
-					restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/{id}", imbType, Boolean.class, 
-						containingClass.toLowerCase(), idMethod.invoke(notifier));
-				} catch(Exception e) {
-					// Retry connection
-					if(ConnectException.class.isAssignableFrom(e.getClass())) {
-						System.out.println("Unable to communicate with the bus, will try again later");
-					}
-				}
-				break;
-				
 			case Notification.ADD:
 				if(EReference.class.isAssignableFrom(notification.getFeature().getClass())) {
 					try {
@@ -78,7 +59,7 @@ public aspect EcoreAspect_$typeName {
 						imbType = EcoreAspect_$typeName. getImbType(referenceName, newValue);
 						
 						// Send to the Imb
-						restTemplate.put("$imbAddress" + "/imb/create/{object}", imbType, referenceName.toLowerCase());
+						restTemplate.put("$imbAddress" + "/imb/create/{object}/Eclipse", imbType, referenceName.toLowerCase());
 					} catch(Exception e) {
 						// Retry connection
 						if(ConnectException.class.isAssignableFrom(e.getClass())) {
@@ -86,7 +67,26 @@ public aspect EcoreAspect_$typeName {
 						}
 					}
 				}
-				break;
+			break;
+
+			case Notification.SET:
+				try {
+					containingClass = ((EStructuralFeature)notification.getFeature()).getEContainingClass().getName();
+				
+					// Convert to appropriate Imb type
+					imbType = EcoreAspect_$typeName. getImbType(containingClass, notifier);
+				
+					// Send to the Imb
+					idMethod = notifier.getClass().getMethod("getId");
+					restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Eclipse/{id}", imbType, Boolean.class, 
+						containingClass.toLowerCase(), idMethod.invoke(notifier));
+				} catch(Exception e) {
+					// Retry connection
+					if(ConnectException.class.isAssignableFrom(e.getClass())) {
+						System.out.println("Unable to communicate with the bus, will try again later");
+					}
+				}
+			break;
 				
 			case Notification.REMOVE:
 				try {
@@ -95,7 +95,7 @@ public aspect EcoreAspect_$typeName {
 					referenceNameParts = referenceName.split("\\.");
 					referenceName = referenceNameParts[referenceNameParts.length-1].toLowerCase();
 					idMethod = oldValue.getClass().getMethod("getId");
-					restTemplate.delete("$imbAddress" + "/imb/delete/{object}/{id}", 
+					restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Eclipse/{id}", 
 						referenceName, idMethod.invoke(oldValue));
 				} catch(Exception e) {
 					// Retry connection
@@ -103,7 +103,7 @@ public aspect EcoreAspect_$typeName {
 						System.out.println("Unable to communicate with the bus, will try again later");
 					}
 				}
-				break;
+			break;
 		}
 	}
 	

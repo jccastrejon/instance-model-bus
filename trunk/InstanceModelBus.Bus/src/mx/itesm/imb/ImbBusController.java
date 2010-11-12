@@ -91,6 +91,7 @@ public class ImbBusController {
                     webConfiguration.indexOf('"', basePackageIndex))
                     + ".web";
             context.put("controllerPackage", controllerPackage);
+            context.put("typePackage", controllerPackage.replace(".web", ".domain"));
             controllerFile = new File(busProject, "/src/main/java/" + controllerPackage.replace('.', '/')
                     + "/ImbBusController.java");
             writer = new FileWriter(controllerFile);
