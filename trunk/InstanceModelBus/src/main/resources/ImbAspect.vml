@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Random;
 
 import javax.persistence.EntityManager;
@@ -33,16 +34,22 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 @Configurable
-privileged aspect $controllerType.toString()_Roo_Imb {
+public aspect $controllerType.toString()_Roo_Imb {
 
     @Autowired
     private RestTemplate restTemplate;
     
     @Autowired
-    Marshaller marshaller;
+    private Marshaller marshaller;
+    
+    @Autowired
+    private Marshaller $controllerType. marshaller;
 
     @Autowired
-    Unmarshaller unmarshaller;
+    private Unmarshaller unmarshaller;
+    
+    @Autowired
+    private Unmarshaller $controllerType. unmarshaller;
     
     
     // Imb Id
@@ -61,7 +68,7 @@ privileged aspect $controllerType.toString()_Roo_Imb {
         EntityManager entityManager;        
         
         entityManager = Item.entityManager();
-        query = entityManager.createQuery("SELECT $type FROM $type AS object WHERE object.imbId = :imbId", $type. class);
+        query = entityManager.createQuery("SELECT $type FROM $type AS $type.toLowerCase() WHERE $type.toLowerCase(). imbId = :imbId", $type. class);
         query.setParameter("imbId", imbId);
         return query.getSingleResult();
     }
@@ -69,14 +76,11 @@ privileged aspect $controllerType.toString()_Roo_Imb {
     // Keep the original state of an instance before it is edited
     after(Long id, Model model) returning :
     	execution (* ($controllerPackage.$controllerType).updateForm(..)) && args(id, model) {
-    	Object imbType;
+    	$type object;
     	LocalEntity localEntity;
-    	ByteArrayOutputStream outputStream;
     	
     	try {
-    		imbType = $controllerType.toString()_Roo_Imb. transformToImb$type ($type. find$type(id));
-    		outputStream = new ByteArrayOutputStream();
-	    	marshaller.marshal(imbType, new StreamResult(outputStream));
+    		object = $type. find$type(id);
     	
     		// We only keep a local copy of any type at any given time 
     		$controllerType.toString()_Roo_Imb. removeLocalEntities();
@@ -84,9 +88,9 @@ privileged aspect $controllerType.toString()_Roo_Imb {
     		// Save new local copy
     		localEntity = new LocalEntity();
     		localEntity.setEntityName("$type");
-    		localEntity.setEntityId(id);
+    		localEntity.setImbId(object.getImbId());
 	    	localEntity.setValidity(new Date());
-    		localEntity.setEntity(new String(outputStream.toByteArray(), "UTF-8"));
+    		localEntity.setEntity(new String(object.marshal(marshaller).toByteArray(), "UTF-8"));
     		localEntity.persist();
     	} catch(Exception e) {
     		System.out.println("Unable to register local copy of $type: " + e.getMessage());
@@ -161,20 +165,46 @@ privileged aspect $controllerType.toString()_Roo_Imb {
     
     @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
     public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
-        $type remoteObject;
         $type localObject;
+        $type remoteObject;
+        LocalEntity localEntity;
+        RemoteEntity remoteEntity;
+        List<LocalEntity> localEntities;
         
         remoteObject = $controllerType.toString()_Roo_Imb. transformFromImb$type (object);
         localObject = $type. findByImbId(remoteObject.getImbId());
         
         // TODO: Concurrency controls
+        localEntities = LocalEntity.findLocalEntitysByImbId(localObject.getImbId()).getResultList();
         
-        localObject.merge();
+        // This instance is not being edited, can save changes without problems
+        if((localEntities == null) || (localEntities.isEmpty())) {
+        	System.out.println("Saving according to remote state");
+        }
+        
+        // This instance is being edited, save remote state to compare when
+        // the instance is saved locally
+        else {
+        	try {
+        		remoteEntity = new RemoteEntity();
+	        	remoteEntity.setEntityName("$type");
+    			remoteEntity.setImbId(remoteObject.getImbId());
+	    		remoteEntity.setValidity(new Date());
+    			remoteEntity.setEntity(new String(remoteObject.marshal(marshaller).toByteArray(), "UTF-8"));
+	    		remoteEntity.persist();
+        	} catch(Exception e) {
+    			System.out.println("Unable to register remote copy of $type: " + e.getMessage());
+    		}
+        }
+        
         return true;
     }
     
     @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
     public void ItemController.imbDelete(@PathVariable("id") Long id) {
+    
+    	// TODO: Concurrency controls
+    
         $type. findByImbId(id).remove();
     }
     
@@ -258,6 +288,25 @@ privileged aspect $controllerType.toString()_Roo_Imb {
         }
         
         return returnValue;
+    }
+    
+    /**
+    * Marshall the specified $type into an output stream.  
+    */
+    public ByteArrayOutputStream $type. marshal(final Marshaller marshaller) {
+    	Object imbType;
+    	ByteArrayOutputStream outputStream;
+    	
+    	try {
+    		imbType = $controllerType.toString()_Roo_Imb. transformToImb$type (this);
+    		outputStream = new ByteArrayOutputStream();
+	    	marshaller.marshal(imbType, new StreamResult(outputStream));
+	    } catch(Exception e) {
+    		System.out.println("Unable to marshal $type: " + e.getMessage());
+    		outputStream = null;
+    	}
+    	
+    	return outputStream;
     }
     
     /**
