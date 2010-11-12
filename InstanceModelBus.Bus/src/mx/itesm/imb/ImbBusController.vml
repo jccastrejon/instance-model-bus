@@ -52,7 +52,7 @@ public class ImbBusController {
         	try {
         		if(this.notify(toolName, tool, request)) {
 					restTemplate.postForObject(tool.getIpAddress() + "/$type.toLowerCase()s/update/{object}/{id}", object, 
-												Boolean.class, "$type.toLowerCase()", object.getId());
+												Boolean.class, "$type.toLowerCase()", object.getImbId());
 				}
 			} catch(Exception e) {
 				// Retry connection
@@ -71,7 +71,7 @@ public class ImbBusController {
         for(Tool tool : Tool.findAllTools()) {
         	try {
         		if(this.notify(toolName, tool, request)) {
-					restTemplate.delete(tool.getIpAddress() + "/delete/{object}/{id}", "$type.toLowerCase()", id);
+					restTemplate.delete(tool.getIpAddress() + "/$type.toLowerCase()s/delete/{object}/{id}", "$type.toLowerCase()", id);
 				}
 			} catch(Exception e) {
 				// Retry connection
