@@ -88,6 +88,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     		object = $type. find$type(id);
     		localEntity = new LocalEntity();
     		localEntity.setEntityName("$type");
+    		localEntity.setEntityId(id);
     		localEntity.setImbId(object.getImbId());
 	    	localEntity.setValidity(new Date());
     		localEntity.setEntity(new String(object.marshal(marshaller).toByteArray(), "UTF-8"));
@@ -152,9 +153,20 @@ public aspect $controllerType.toString()_Roo_Imb {
 	
 	after($type object, BindingResult result, Model model, HttpServletRequest request) returning : 
 		execution (* ($controllerPackage.$controllerType).update(..)) && args(object, result, model, request) {
+		LocalEntity localEntity;
+		$type persistentObject;
+		
 		try {
 			try {
-				$controllerType.toString()_Roo_Imb. mergeWithLocal($type. find$type (object.getId()), unmarshaller);
+				// Restore IMB Id, since it wasn't send in the Spring Roo editing page
+				localEntity = $controllerType.toString()_Roo_Imb. getLocalEntity(object.getId());
+				persistentObject = null;
+				if(localEntity != null) {
+					persistentObject = $type. find$type (object.getId());
+					persistentObject.setImbId(localEntity.getImbId());
+					persistentObject.merge();
+				}
+				$controllerType.toString()_Roo_Imb. mergeWithLocal(persistentObject, unmarshaller);
 			} catch(Exception e) {
     			System.out.println("Unable to merge instance: " + object + ": " + e.getMessage());
     		}
@@ -214,6 +226,7 @@ public aspect $controllerType.toString()_Roo_Imb {
         	try {
         		remoteEntity = new RemoteEntity();
 	        	remoteEntity.setEntityName("$type");
+	        	remoteEntity.setEntityId($type. findByImbId(id).getId());
     			remoteEntity.setImbId(remoteObject.getImbId());
 	    		remoteEntity.setValidity(new Date());
     			remoteEntity.setEntity(new String(remoteObject.marshal(marshaller).toByteArray(), "UTF-8"));
@@ -324,6 +337,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     * Merge the changes made to an instance
     */
     private static void mergeWithLocal(final $type currentObject, final Unmarshaller unmarshaller) throws Exception {
+    	boolean valueSet;
     	Object localValue;
     	Object remoteValue;
     	Object currentValue;
@@ -383,31 +397,46 @@ public aspect $controllerType.toString()_Roo_Imb {
             	    // Concurrency controls
             	    
             	    // Only one valid value
+            	    valueSet = false;
             	    if((currentValue != null) && (localValue == null) && (remoteValue == null)) {
+            	    	valueSet = true;
             	    	setMethod.invoke(persistentObject, currentValue);
             	    } else if((currentValue == null) && (localValue != null) && (remoteValue == null)) {
+            	    	valueSet = true;
             	    	setMethod.invoke(persistentObject, localValue);
             	    } else if((currentValue == null) && (localValue == null) && (remoteValue != null)) {
+            	    	valueSet = true;
             	    	setMethod.invoke(persistentObject, remoteValue);
             	    }
             	    
-            		// If the currentValue is different from the local one, 
-            	    // we save it, overriding any possible change in the remote state
-            	    // (override remote value)
-            	    else if((currentValue != null) && (!currentValue.equals(localValue))) {
-            	    	setMethod.invoke(persistentObject, currentValue);	
-            	    }
+            	    if(!valueSet) {
+    	        	    // For this purpose, null and "" are equivalent
+	            	    if(currentValue == null) {
+            	    		currentValue = "";
+            		    } if(localValue == null) {
+            		    	localValue = "";
+        	    	    } if(remoteValue == null) {
+    	        	    	remoteValue = "";
+	            	    }
             	    
-            	    // If both the current and local values are the same, and there's 
-            	    // a remote value, save it, this property was updated by another tool
-            	    // (override local value)
-            	    else if((remoteValue != null) && (currentValue != null) && (currentValue.equals(localValue))) {
-            	    	setMethod.invoke(persistentObject, remoteValue);
-            	    }
+            			// If the currentValue is different from the local one, 
+            		    // we save it, overriding any possible change in the remote state
+        	    	    // (override remote value)
+    	        	    else if(!currentValue.equals(localValue)) {
+	            	    	setMethod.invoke(persistentObject, currentValue);	
+            	    	}
             	    
-            	    // There were not changes in the property value
-            	    else if(localValue != null) {
-            	    	setMethod.invoke(persistentObject, localValue);
+            		    // If both the current and local values are the same, and there's 
+        	    	    // a remote value, save it, this property was updated by another tool
+    	        	    // (override local value)
+	            	    else if(currentValue.equals(localValue)) {
+            	    		setMethod.invoke(persistentObject, remoteValue);
+            		    }
+            	    
+            		    // There were not changes in the property value
+        	    	    else {
+    	        	    	setMethod.invoke(persistentObject, localValue);
+	            	    }
             	    }
 	    		}
     		}
@@ -472,5 +501,26 @@ public aspect $controllerType.toString()_Roo_Imb {
         
         return returnValue;
     }
+    
+    /**
+    * Get the local entity of type: $type with the specified Id
+    */
+    private static LocalEntity getLocalEntity(final Long entityId) {
+    	LocalEntity returnValue; 
+    	List<LocalEntity> localEntities;
+    	
+    	returnValue = null;
+    	localEntities = LocalEntity.findLocalEntitysByEntityId(entityId).getResultList();
+    	if(localEntities != null) {
+    		for(LocalEntity local : localEntities) {
+    			if(local.getEntityName().equals("$type")) {
+    				returnValue = local;
+    				break;
+    			}
+    		}
+    	}
+    	
+    	return returnValue;
+    } 
     
 }
