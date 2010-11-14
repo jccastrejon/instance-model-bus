@@ -1,0 +1,35 @@
+package mx.itesm.ecore.web;
+
+import java.net.ConnectException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.client.RestTemplate;
+
+@RequestMapping("/$type.toLowerCase()" + "s")
+@Controller
+public class EcoreController$type {
+
+	@Autowired
+    private RestTemplate restTemplate;
+    
+    @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
+    public void create(@RequestBody $imbTypePackage.$type object) {
+        System.out.println("Creando instancia en eclipse: " + object);
+    }
+    
+    @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
+    public boolean update(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
+    	System.out.println("Actualizando instancia en eclipse: " + object);
+    	return true;
+    }
+    
+    @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable("id") Long id) {
+    	System.out.println("Borrando instancia en eclipse: " + id);
+    }
+}

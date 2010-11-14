@@ -1,0 +1,49 @@
+    public static class Implementation extends EclipsePlugin {
+        private static Process tomcatProcess;
+
+        /**
+         * Creates an instance. <!-- begin-user-doc --> <!-- end-user-doc -->
+         * 
+         * @generated
+         */
+        public Implementation() {
+            super();
+
+            // Remember the static instance.
+            plugin = this;
+        }
+
+        @Override
+        public void start(org.osgi.framework.BundleContext context) throws Exception {
+            java.io.File localImbDir;
+
+            try {
+                localImbDir = new java.io.File(${imbProject});
+                Implementation.tomcatProcess = Runtime.getRuntime().exec("mvn tomcat:run", null, localImbDir);
+                System.out.println("Successfully launched tomcat associated with the eclipse editor");
+            } catch (Exception e) {
+                System.out.println("Error launching tomcat associated to the eclipse editor: " + e.getMessage());
+            }
+            
+            // Default behavior
+            super.start(context);
+        }
+
+        @Override
+        public void stop(org.osgi.framework.BundleContext context) throws Exception {
+            try {
+                if (Implementation.tomcatProcess != null) {
+                    Implementation.tomcatProcess.destroy();
+                    System.out.println("Successfully terminated tomcat associated with the eclipse editor");
+                } else {
+                    System.out.println("No tomcat instance associated with the eclipse editor");
+                }
+            } catch (Exception e) {
+                System.out.println("Error stopping tomcat associated with the eclipse editor" + e.getMessage());
+            }
+            
+            // Default behavior
+            super.stop(context);
+        }
+    }
+}

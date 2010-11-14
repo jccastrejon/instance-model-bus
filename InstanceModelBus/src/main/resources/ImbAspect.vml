@@ -157,10 +157,10 @@ public aspect $controllerType.toString()_Roo_Imb {
 		$type persistentObject;
 		
 		try {
+			persistentObject = null;
 			try {
 				// Restore IMB Id, since it wasn't send in the Spring Roo editing page
 				localEntity = $controllerType.toString()_Roo_Imb. getLocalEntity(object.getId());
-				persistentObject = null;
 				if(localEntity != null) {
 					persistentObject = $type. find$type (object.getId());
 					persistentObject.setImbId(localEntity.getImbId());
@@ -173,7 +173,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     		
     		$controllerType.toString()_Roo_Imb. removeLocalAndRemoteEntities();
 			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Spring/{id}", 
-				$controllerType.toString()_Roo_Imb. transformToImb$type (object), Boolean.class, "$type.toLowerCase()", object.getImbId());
+				$controllerType.toString()_Roo_Imb. transformToImb$type (persistentObject), Boolean.class, "$type.toLowerCase()", persistentObject.getImbId());
 		} catch(Exception e) {
 			// Retry connection
 			if(ConnectException.class.isAssignableFrom(e.getClass())) {
