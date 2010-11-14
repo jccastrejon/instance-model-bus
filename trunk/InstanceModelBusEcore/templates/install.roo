@@ -1,0 +1,5 @@
+project --topLevelPackage mx.itesm.ecore
+persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY 
+jaxb xsd compiler setup --generateDirectory src/main/java
+http resource representation setup
+controller class --class mx.itesm.ecore.web.EmptyController
