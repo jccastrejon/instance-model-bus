@@ -7,6 +7,6 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="mx.itesm.imb.EcoreImbEditor"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/jccastrejon/java/workspace_AgoDic2010/TodoList.Ecore /Users/jccastrejon/java/workspace_AgoDic2010/TodoList.Roo /Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBusEcore"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/jccastrejon/java/workspace_AgoDic2010/TodoList.ecore /Users/jccastrejon/java/workspace_AgoDic2010/TodoList.roo /Users/jccastrejon/java/workspace_AgoDic2010/InstanceModelBusEcore"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="InstanceModelBusEcore"/>
 </launchConfiguration>

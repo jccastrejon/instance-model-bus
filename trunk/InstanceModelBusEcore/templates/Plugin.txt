@@ -18,7 +18,7 @@
             java.io.File localImbDir;
 
             try {
-                localImbDir = new java.io.File(${imbProject});
+                localImbDir = new java.io.File("${imbProject}");
                 Implementation.tomcatProcess = Runtime.getRuntime().exec("mvn tomcat:run", null, localImbDir);
                 System.out.println("Successfully launched tomcat associated with the eclipse editor");
             } catch (Exception e) {
