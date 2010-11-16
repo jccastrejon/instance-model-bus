@@ -1,0 +1,32 @@
+
+	public void selectionChanged(SelectionChangedEvent event) {
+		boolean typeSaved;
+		String typesPackage;
+		Object selectedElement;
+		java.util.List<String> validTypes;
+
+		validTypes = new ArrayList<String>();
+		typesPackage = "$typesPackage";
+		$validTypes
+		if(org.eclipse.jface.viewers.TreeSelection.class.isAssignableFrom(event.getSelection().getClass())) {
+			selectedElement = ((org.eclipse.jface.viewers.TreeSelection)event.getSelection()).getFirstElement();
+		
+			// Save local state
+			typeSaved = false;
+			for(String type : validTypes) {
+				try {
+					if(Class.forName(typesPackage + "." + type).isAssignableFrom(selectedElement.getClass())) {
+						System.out.println("Saving type..." + type);
+						typeSaved = true;
+						break;
+					}
+				} catch(Exception e) {
+					System.out.println("Saving local state of: " + selectedElement);
+				}
+			}
+			
+			// Remove local state
+			if(!typeSaved) {
+				System.out.println("Removing local state...");
+			}
+		}
