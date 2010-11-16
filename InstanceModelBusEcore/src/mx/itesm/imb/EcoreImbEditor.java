@@ -104,12 +104,15 @@ public class EcoreImbEditor {
     @SuppressWarnings("unchecked")
     public static void createRooApplication(final File ecoreProject, final File busProject, final File templateProject) {
         File imbProject;
+        File editProject;
         String pluginContent;
+        String pomContent;
         String tomcatConfiguration;
         Collection<File> pluginFiles;
 
         try {
-            imbProject = new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/imb/");
+            editProject = new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit");
+            imbProject = new File(editProject, "/imb/");
             FileUtils.deleteDirectory(imbProject);
 
             // Create the roo application
@@ -117,20 +120,24 @@ public class EcoreImbEditor {
                     .copyFile(new File(templateProject, "/templates/install.roo"), new File(imbProject, "install.roo"));
             EcoreImbEditor.executeCommand("roo script --file install.roo", imbProject);
 
+            // Update libraries
+            pomContent = FileUtils.readFileToString(new File(imbProject, "pom.xml"));
+            pomContent = pomContent.replaceFirst("</dependencies>",
+                    FileUtils.readFileToString(new File(templateProject, "/templates/pom.xml")));
+            FileUtils.writeStringToFile(new File(imbProject, "pom.xml"), pomContent);
+
             // IMB types configuration
-            FileUtils.copyDirectory(new File(busProject, "/src/main/java/imb"), new File(ecoreProject.getParent(),
-                    ecoreProject.getName() + ".edit/imb/src/main/java/imb"));
-            FileUtils.copyFile(new File(busProject, "/src/main/resources/schema.xsd"),
-                    new File(ecoreProject.getParent(), ecoreProject.getName()
-                            + ".edit/imb/src/main/resources/schema.xsd"));
+            FileUtils.copyDirectory(new File(busProject, "/src/main/java/imb"), new File(imbProject,
+                    "/src/main/java/imb"));
+            FileUtils.copyFile(new File(busProject, "/src/main/resources/schema.xsd"), new File(imbProject,
+                    "/src/main/resources/schema.xsd"));
 
             FileUtils.copyFile(new File(busProject,
-                    "/src/main/resources/META-INF/spring/applicationContext-contentresolver.xml"), new File(
-                    ecoreProject.getParent(), ecoreProject.getName()
-                            + ".edit/imb/src/main/resources/META-INF/spring/applicationContext-contentresolver.xml"));
+                    "/src/main/resources/META-INF/spring/applicationContext-contentresolver.xml"), new File(imbProject,
+                    "/src/main/resources/META-INF/spring/applicationContext-contentresolver.xml"));
 
             // Update the plugin configuration
-            pluginFiles = FileUtils.listFiles(ecoreProject, new IOFileFilter() {
+            pluginFiles = FileUtils.listFiles(new File(editProject, "/src"), new IOFileFilter() {
                 @Override
                 public boolean accept(File file) {
                     return (file.getName().endsWith("Plugin.java"));
@@ -140,17 +147,7 @@ public class EcoreImbEditor {
                 public boolean accept(File dir, String file) {
                     return (file.endsWith("Plugin.java"));
                 }
-            }, new IOFileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return (file.getName().endsWith("Plugin.java"));
-                }
-
-                @Override
-                public boolean accept(File dir, String file) {
-                    return (file.endsWith("Plugin.java"));
-                }
-            });
+            }, TrueFileFilter.INSTANCE);
             for (File plugin : pluginFiles) {
                 pluginContent = FileUtils.readFileToString(plugin);
                 pluginContent = pluginContent.substring(0,
@@ -270,7 +267,7 @@ public class EcoreImbEditor {
             context.put("type", type);
             context.put("packageName", packageName);
             writer = new FileWriter(new File(imbProject, "/imb/src/main/java/mx/itesm/ecore/web/EcoreController" + type
-                    + ".aj"));
+                    + ".java"));
             EcoreImbEditor.controllerTemplate.merge(context, writer);
             writer.close();
         }
@@ -297,8 +294,8 @@ public class EcoreImbEditor {
         context.put("typeName", typeName);
         context.put("packageName", packageName);
         context.put("typePackage", packageName.split("\\.")[0]);
-        context.put("imbAddress", "http://localhost:9090/tlbus-0.1.0.BUILD-SNAPSHOT");
-
+        context.put("imbAddress", "http://localhost:9090/todolistbus-0.1.0.BUILD-SNAPSHOT");
+        
         for (File imbType : imbTypes) {
             if (imbType.getName().equals(typeName.replace("ItemProvider", "") + ".java")) {
                 context.put("generateHelperMethod", true);

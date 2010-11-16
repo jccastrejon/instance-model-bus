@@ -33,7 +33,7 @@ public class ImbBusController {
         for(Tool tool : Tool.findAllTools()) {
         	try {
         		if(this.notify(toolName, tool, request)) {
-					restTemplate.put(tool.getIpAddress() + "/$type.toLowerCase()s/create/{object}", object, "$type.toLowerCase()");
+					restTemplate.put("http://" + tool.getIpAddress() + ":" +  tool.getPort() + "/" + tool.getContextPath() + "/$type.toLowerCase()s/create/{object}", object, "$type.toLowerCase()");
 				}
 			} catch(Exception e) {
 				// Retry connection
@@ -51,7 +51,7 @@ public class ImbBusController {
         for(Tool tool : Tool.findAllTools()) {
         	try {
         		if(this.notify(toolName, tool, request)) {
-					restTemplate.postForObject(tool.getIpAddress() + "/$type.toLowerCase()s/update/{object}/{id}", object, 
+					restTemplate.postForObject("http://" + tool.getIpAddress() + ":" +  tool.getPort() + "/" + tool.getContextPath() + "/$type.toLowerCase()s/update/{object}/{id}", object, 
 												Boolean.class, "$type.toLowerCase()", object.getImbId());
 				}
 			} catch(Exception e) {
@@ -71,7 +71,7 @@ public class ImbBusController {
         for(Tool tool : Tool.findAllTools()) {
         	try {
         		if(this.notify(toolName, tool, request)) {
-					restTemplate.delete(tool.getIpAddress() + "/$type.toLowerCase()s/delete/{object}/{id}", "$type.toLowerCase()", id);
+					restTemplate.delete("http://" + tool.getIpAddress() + ":" +  tool.getPort() + "/" + tool.getContextPath() + "/$type.toLowerCase()s/delete/{object}/{id}", "$type.toLowerCase()", id);
 				}
 			} catch(Exception e) {
 				// Retry connection

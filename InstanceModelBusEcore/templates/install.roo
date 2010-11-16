@@ -3,3 +3,21 @@ persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY
 jaxb xsd compiler setup --generateDirectory src/main/java
 http resource representation setup
 controller class --class mx.itesm.ecore.web.EmptyController
+
+entity --class mx.itesm.ecore.domain.RemoteEntity
+field string --fieldName entityName
+field number --fieldName entityId --type java.lang.Long
+field number --fieldName imbId --type java.lang.Long
+field date --fieldName validity --type java.util.Date
+field string --fieldName entity
+finder add --finderName findRemoteEntitysByImbId
+finder add --finderName findRemoteEntitysByEntityId
+
+entity --class mx.itesm.ecore.domain.LocalEntity
+field string --fieldName entityName
+field number --fieldName entityId --type java.lang.Long
+field number --fieldName imbId --type java.lang.Long
+field date --fieldName validity --type java.util.Date
+field string --fieldName entity
+finder add --finderName findLocalEntitysByImbId
+finder add --finderName findLocalEntitysByEntityId

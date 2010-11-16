@@ -115,8 +115,8 @@ public aspect EcoreAspect_$typeName {
 		Object returnValue;
 		Method transformationMethod;
 		
-		transformationMethod = Class.forName("tl.provider" + ".EcoreAspect_" + typeName + "ItemProvider")
-									.getMethod("convertToImb" + typeName, new Class[]{Class.forName("tl" + "." + typeName)});
+		transformationMethod = Class.forName("$packageName" + ".EcoreAspect_" + typeName + "ItemProvider")
+									.getMethod("convertToImb" + typeName, new Class[]{Class.forName("$typePackage" + "." + typeName)});
 		returnValue = transformationMethod.invoke(null, typeInstance);
 		
 		return returnValue;
@@ -187,6 +187,9 @@ public aspect EcoreAspect_$typeName {
 
         return returnValue;
     }
+    
+
+    
     #end
     
 }
