@@ -48,7 +48,7 @@ public class EcoreImbEditor {
         // 0: ecoreProject, 1: busProject, 2: templateProject
         EcoreImbEditor.configureRestTemplate(new File(args[0]), new File(args[1]), new File(args[2]));
         EcoreImbEditor.createRooApplication(new File(args[0]), new File(args[1]), new File(args[2]));
-        EcoreImbEditor.generateProvidersArtifacts(new File(args[0]));
+        EcoreImbEditor.generateProvidersArtifacts(new File(args[0]), new File(args[2]));
     }
 
     /**
@@ -56,11 +56,13 @@ public class EcoreImbEditor {
      * @param ecoreProject
      */
     @SuppressWarnings("unchecked")
-    public static void generateProvidersArtifacts(final File ecoreProject) {
+    public static void generateProvidersArtifacts(final File ecoreProject, final File templateProject) {
         File provider;
         File imbProject;
         List<File> imbTypes;
         Iterator<File> files;
+        List<String> types;
+        String typesPackage;
 
         // Get imb types
         imbProject = new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit");
@@ -84,9 +86,18 @@ public class EcoreImbEditor {
             }
         }, TrueFileFilter.INSTANCE);
 
+        typesPackage = null;
+        types = new ArrayList<String>();
         while (files.hasNext()) {
             try {
                 provider = files.next();
+                types.add(provider.getName().replace("ItemProvider.java", ""));
+                typesPackage = provider
+                        .getPath()
+                        .substring(provider.getPath().indexOf("src") + "src".length() + 1,
+                                provider.getPath().indexOf(provider.getName().replace(".java", "")) - 1)
+                        .replace('/', '.');
+
                 EcoreImbEditor.writeEcoreAspect(provider, imbTypes);
                 EcoreImbEditor.writeEcoreController(imbProject, provider, imbTypes);
                 System.out.println("Artifacts for " + provider + " successfully generated");
@@ -95,6 +106,9 @@ public class EcoreImbEditor {
                 System.out.println("Error generating Artifacts: " + e.getMessage());
             }
         }
+
+        typesPackage = typesPackage.replace(".provider", "");
+        EcoreImbEditor.updateSelectionService(ecoreProject, templateProject, typesPackage, types);
     }
 
     /**
@@ -295,7 +309,7 @@ public class EcoreImbEditor {
         context.put("packageName", packageName);
         context.put("typePackage", packageName.split("\\.")[0]);
         context.put("imbAddress", "http://localhost:9090/todolistbus-0.1.0.BUILD-SNAPSHOT");
-        
+
         for (File imbType : imbTypes) {
             if (imbType.getName().equals(typeName.replace("ItemProvider", "") + ".java")) {
                 context.put("generateHelperMethod", true);
@@ -312,6 +326,55 @@ public class EcoreImbEditor {
         writer = new FileWriter(new File(provider.getParentFile(), "EcoreAspect_" + typeName + ".aj"));
         EcoreImbEditor.aspectTemplate.merge(context, writer);
         writer.close();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void updateSelectionService(final File ecoreProject, final File templateProject,
+            final String typesPackage, final List<String> types) {
+        StringBuilder validTypes;
+        String contributorContent;
+        String contributorTemplate;
+        String contributorLastContent;
+        Collection<File> contributorFiles;
+
+        try {
+            contributorTemplate = FileUtils.readFileToString(new File(templateProject, "/templates/Contributor.txt"));
+            validTypes = new StringBuilder();
+            for (String type : types) {
+                if (!type.toLowerCase().equals("system")) {
+                    validTypes.append("validTypes.add(\"" + type + "\");\n");
+                }
+            }
+
+            contributorFiles = FileUtils.listFiles(new File(ecoreProject.getParent(), ecoreProject.getName()
+                    + ".editor"), new IOFileFilter() {
+                @Override
+                public boolean accept(File dir, String file) {
+                    return file.endsWith("Contributor.java");
+                }
+
+                @Override
+                public boolean accept(File file) {
+                    return file.getName().endsWith("Contributor.java");
+                }
+            }, TrueFileFilter.INSTANCE);
+
+            contributorTemplate = contributorTemplate.replace("$typesPackage", typesPackage);
+            contributorTemplate = contributorTemplate.replace("$validTypes", validTypes.toString());
+            for (File contributor : contributorFiles) {
+                contributorContent = FileUtils.readFileToString(contributor);
+                contributorLastContent = contributorContent.substring(contributorContent
+                        .indexOf("// Remove any menu items for old selection."));
+                contributorContent = contributorContent.substring(0,
+                        contributorContent.indexOf("public void selectionChanged(SelectionChangedEvent event) {"));
+                contributorContent = contributorContent + contributorTemplate + contributorLastContent;
+                FileUtils.writeStringToFile(contributor, contributorContent);
+                break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Unable to update selection service: " + e.getMessage());
+        }
     }
 
     /**
