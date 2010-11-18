@@ -182,7 +182,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 		}
 	}
 	
-	after(Long id, Integer page, Integer size, Model model) returning : 
+	before(Long id, Integer page, Integer size, Model model) : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
 			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Spring/{id}", "$type.toLowerCase()", $type. find$type (id).getImbId());
