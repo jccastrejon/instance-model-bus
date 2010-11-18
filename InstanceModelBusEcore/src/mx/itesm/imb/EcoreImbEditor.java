@@ -208,6 +208,8 @@ public class EcoreImbEditor {
                     ecoreProject.getName() + ".edit/lib"));
             FileUtils.copyDirectory(new File(templateProject, "/lib.rest"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".editor/lib"));
+            FileUtils.copyDirectory(new File(templateProject, "/lib.jdom"), new File(ecoreProject.getParent(),
+                    ecoreProject.getName() + ".editor/lib"));
 
             // Add rest configuration
             templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/beans.xml"));
@@ -230,7 +232,7 @@ public class EcoreImbEditor {
             // Update classpath
             FileUtils.copyFile(new File(templateProject, "templates/classpath.xml"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".edit/.classpath"));
-            FileUtils.copyFile(new File(templateProject, "templates/classpath.xml"), new File(ecoreProject.getParent(),
+            FileUtils.copyFile(new File(templateProject, "templates/classpath.editor.xml"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".editor/.classpath"));
             templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/project.xml"));
             FileUtils.writeStringToFile(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/.project"),

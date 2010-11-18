@@ -4,16 +4,15 @@ import java.beans.Introspector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import mx.itesm.ecore.domain.LocalEntity;
-import mx.itesm.ecore.domain.RemoteEntity;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -48,14 +47,74 @@ public class EcoreController$type {
     
     @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
     public void create(@RequestBody $imbTypePackage.$type object) {
-        System.out.println("Creando instancia en eclipse: " + object);
+    	File xmlFile;
+        Element instance;
+        Document rootDocument;
+        SAXBuilder saxBuilder;
+        Object attributeValue;
+        
+        try {
+        	//TODO: Fix file resolution!!:.
+        	xmlFile = new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist");
+        	saxBuilder = new SAXBuilder();
+        	rootDocument = saxBuilder.build(xmlFile);
+        	
+        	instance = new Element("$type");
+        	for(Method method : object.getClass().getDeclaredMethods()) {
+        		if(method.getName().startsWith("get")) {
+        			attributeValue = method.invoke(object);
+        			if(attributeValue != null) {
+        				instance.setAttribute(Introspector.decapitalize(method.getName().replace("get", "")), attributeValue.toString());
+        			}
+        		}
+        	}
+        	
+        	// Add instance
+        	rootDocument.getRootElement().addContent(instance);
+        	
+        	// Save changes
+    		out.output(rootDocument, new FileWriter(xmlFile));
+        } catch(Exception e) {
+        	System.out.println("Unable to create instance: " + object + " : " + e.getMessage());
+        }
     }
     
     @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
     public boolean update(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
-    	//TODO: Fix file resolution!!:.
+    	File localState;
+    	Scanner scanner;
+    	boolean beingEdited;
+    	FileWriter remoteWriter;
+    	Object unmarshalledObject;
+    	StringBuilder localContent;
+    	$imbTypePackage.$type localObject;
+    	
     	try {
-    		this.mergeWithLocal(id, object, new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist"));
+    		// Determine if this instance is currently being edited
+    		beingEdited = false;
+    		localState = this.getLocalState();
+    		if(localState.exists()) {
+    			unmarshalledObject = this.getObject(localState);
+    			if((unmarshalledObject != null) && ($imbTypePackage.$type. class.isAssignableFrom(unmarshalledObject.getClass()))) {
+    				localObject = ($imbTypePackage.$type) unmarshalledObject;
+    				beingEdited = (localObject.getImbId().equals(id));
+    			}
+    		}
+    		
+    		// This instance is not being edited, can save changes without problems
+    		if(!beingEdited) {
+				//TODO: Fix file resolution!!:.
+    			this.mergeWithLocal(id, object, new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist"));	
+    		}
+    		
+    		// This instance is being edited, save remote state to compare when
+    		// the instance is saved locally or the user leaves the edition page
+    		else {
+    			remoteWriter = new FileWriter(this.getRemoteState());
+    			remoteWriter.write(this.marshal(object));
+				remoteWriter.flush();
+				remoteWriter.close();
+    		}
     	} catch(Exception e) {
     		System.out.println("Error while updating: " + e.getMessage());
     	}
@@ -64,7 +123,28 @@ public class EcoreController$type {
     
     @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
     public void delete(@PathVariable("id") Long id) {
-    	System.out.println("Borrando instancia en eclipse: " + id);
+    	File xmlFile;
+    	Element instance;
+        XPath instancePath;
+        Document rootDocument;
+        SAXBuilder saxBuilder;
+        
+        try {
+	        // TODO: Fix file resolution!!:.
+    	    xmlFile = new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist");
+        	saxBuilder = new SAXBuilder();
+	        rootDocument = saxBuilder.build(xmlFile);
+    	    instancePath = XPath.newInstance("//*[@imbId='" + id + "']");
+        	instance = (Element) instancePath.selectSingleNode(rootDocument);
+        
+	        // Check this behavior
+    	    rootDocument.getRootElement().removeContent(instance);
+    	    
+    	    // Save changes
+    		out.output(rootDocument, new FileWriter(xmlFile));
+        } catch(Exception e) {
+        	System.out.println("Unable to delete instance: " + id + " : " + e.getMessage());
+        }
     }
     
     
@@ -81,10 +161,9 @@ public class EcoreController$type {
     	Object remoteValue;
     	Object currentValue;
     	String propertyName;
+    	Object unmarshalledObject;
     	$imbTypePackage.$type localObject;
     	$imbTypePackage.$type remoteObject;
-    	List<LocalEntity> localEntities;
-    	List<RemoteEntity> remoteEntities;
     	
     	// Locate the corresponding instance in the XML file
         saxBuilder = new SAXBuilder();
@@ -94,26 +173,26 @@ public class EcoreController$type {
     	
     	// The instance should already exist, otherwise this wouldn't be a merge!
     	if (instance != null) {
-	    	localObject = null;
-    		localEntities = LocalEntity.findLocalEntitysByImbId(imbId).getResultList();
-    		if((localEntities != null) && (!localEntities.isEmpty())) {
-				for(LocalEntity local : localEntities) {
-    				if(local.getImbId().equals(imbId)) {
-	    				localObject = ($imbTypePackage.$type) unmarshaller.unmarshal(new StreamSource(new ByteArrayInputStream(local.getEntity().getBytes("UTF-8"))));
-    					break;
-	    			}
+    		localObject = null;
+    		unmarshalledObject = this.getObject(this.getLocalState());
+    		if(unmarshalledObject != null) {
+    			if($imbTypePackage.$type. class.isAssignableFrom(unmarshalledObject.getClass())) {
+    				localObject = ($imbTypePackage.$type) unmarshalledObject;
+    				if(!localObject.getImbId().equals(imbId)) {
+    				    localObject = null;
+    				}
     			}
     		}
-    	
-
+    		 
+	    	
 	    	remoteObject = null;
-    		remoteEntities = RemoteEntity.findRemoteEntitysByImbId(imbId).getResultList();
-    		if((remoteEntities != null) && (!remoteEntities.isEmpty())) {
-				for(RemoteEntity remote : remoteEntities) {
-    				if(remote.getImbId().equals(imbId)) {
-    					remoteObject = ($imbTypePackage.$type) unmarshaller.unmarshal(new StreamSource(new ByteArrayInputStream(remote.getEntity().getBytes("UTF-8"))));
-	    				break;
-	    			}
+    		unmarshalledObject = this.getObject(this.getRemoteState());
+    		if(unmarshalledObject != null) {
+    			if($imbTypePackage.$type. class.isAssignableFrom(unmarshalledObject.getClass())) {
+    				remoteObject = ($imbTypePackage.$type) unmarshalledObject;
+    				if(!remoteObject.getImbId().equals(imbId)) {
+    				    remoteObjectObject = null;
+    				}
     			}
     		}
     	
@@ -188,6 +267,52 @@ public class EcoreController$type {
     		
     		// Save changes
     		out.output(rootDocument, new FileWriter(xmlFile));
-    	}    	
+    	}
     }
+    
+    public String marshal(Object imbType) throws Exception {
+    	String returnValue;
+    	ByteArrayOutputStream outputStream;
+    	
+    	outputStream = new ByteArrayOutputStream();
+	    marshaller.marshal(imbType, new StreamResult(outputStream));
+	    
+	    returnValue = new String(outputStream.toByteArray(), "UTF-8");
+	    return returnValue;
+    }
+    
+    
+    public Object getObject(File state) throws Exception {
+        Scanner scanner;
+        Object returnValue;
+        StringBuilder localContent;
+        
+        returnValue = null;
+        if(state.exists()) {
+        	localContent = new StringBuilder();
+    	    scanner = new Scanner(new FileInputStream(state), "UTF-8");
+	        try {
+            	while(scanner.hasNextLine()) {
+        	        localContent.append(scanner.nextLine()).append("\n");
+    	        }
+	        } finally {
+        	    scanner.close();
+    	    }
+    
+	        returnValue = unmarshaller.unmarshal(new StreamSource(new ByteArrayInputStream(localContent.toString().getBytes("UTF-8"))));
+        }
+        
+        return returnValue;
+    }
+    
+    
+    // TODO: Change File resolution:.
+	public File getLocalState() {
+		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+	}
+	
+    // TODO: Change File resolution:.
+	public File getRemoteState() {
+		return new File(new File("/Users/jccastrejon/java"), "remoteState.xml");
+	}
 }

@@ -13,6 +13,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 #end
 
+import java.io.File;
 import java.net.ConnectException;
 import java.util.Random;
 
@@ -86,6 +87,10 @@ public aspect EcoreAspect_$typeName {
 				
 					// Convert to appropriate Imb type
 					imbType = EcoreAspect_$typeName. getImbType(containingClass, notifier);
+				
+					// Clear states
+					this.getLocalState().delete();
+					this.getRemoteState().delete();
 				
 					// Send to the Imb
 					idMethod = notifier.getClass().getMethod("getImbId");
@@ -217,4 +222,14 @@ public aspect EcoreAspect_$typeName {
     
     #end
     
+    
+    // TODO: Change File resolution:.
+	public File getLocalState() {
+		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+	}
+	
+    // TODO: Change File resolution:.
+	public File getRemoteState() {
+		return new File(new File("/Users/jccastrejon/java"), "remoteState.xml");
+	}
 }
