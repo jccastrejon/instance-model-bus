@@ -1,0 +1,84 @@
+
+package $packageName;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.Unmarshaller;
+
+public aspect SelectionAspect {
+	
+	private static Marshaller marshaller;
+	private static Unmarshaller unmarshaller;
+
+	static {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
+        marshaller = applicationContext.getBean("jaxbMarshaller", Marshaller.class);
+        unmarshaller = applicationContext.getBean("jaxbMarshaller", Unmarshaller.class);
+    }
+
+	after(SelectionChangedEvent event) returning: execution (* ($packageName.$contributor).selectionChanged(..)) && args(event) {
+		File localState;
+		String xmlContent;
+		boolean typeSaved;
+		Class<?> typeClass;
+		String typesPackage;
+		java.lang.reflect.Method marshallMethod;
+		FileWriter localWriter;
+		Object selectedElement;
+		java.util.List<String> validTypes;
+
+		validTypes = new ArrayList<String>();
+		typesPackage = "$typesPackage";
+		$validTypes
+		if(org.eclipse.jface.viewers.TreeSelection.class.isAssignableFrom(event.getSelection().getClass())) {
+			localState = this.getLocalState();
+			selectedElement = ((org.eclipse.jface.viewers.TreeSelection)event.getSelection()).getFirstElement();
+		
+			// Save local state
+			typeSaved = false;
+			for(String type : validTypes) {
+				try {
+					typeClass = Class.forName(typesPackage + "." + type);
+					if(typeClass.isAssignableFrom(selectedElement.getClass())) {
+						marshallMethod = Class.forName("$packageName.replace("presentation", "provider")" + ".EcoreAspect_" + type + "ItemProvider")
+								.getDeclaredMethod("marshal", typeClass);
+						xmlContent = (String) marshallMethod.invoke(null, selectedElement);
+						localWriter = new FileWriter(localState);
+						
+						localWriter.write(xmlContent);
+						localWriter.flush();
+						localWriter.close();
+						
+						System.out.println("Local state saved for: " + selectedElement);
+						typeSaved = true;
+						break;
+					}
+				} catch(Exception e) {
+					System.out.println("Unable to save local state for: " + selectedElement + " :" + e.getMessage());
+				}
+			}
+			
+			// Remove local state
+			if(!typeSaved) {
+				try {
+					localState.delete();
+					System.out.println("Local state removed");
+				} catch(Exception e) {
+					System.out.println("Unable to remove local state: " + e.getMessage());
+				}
+			}
+		}
+	}
+	
+	// TODO: Change File resolution:.
+	public File getLocalState() {
+		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+	}
+}

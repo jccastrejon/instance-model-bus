@@ -4,9 +4,13 @@ package $packageName;
 import java.lang.reflect.Method;
 
 #if ($generateHelperMethod)
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 #end
 
 import java.net.ConnectException;
@@ -17,6 +21,8 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.web.client.RestTemplate;
 
 #if ($generateHelperMethod)
@@ -25,10 +31,14 @@ import $typePackage.$typeName.replace("ItemProvider", "");
 
 public aspect EcoreAspect_$typeName {
     private static RestTemplate restTemplate;
+    private static Marshaller marshaller;
+    private static Unmarshaller unmarshaller;
 
     static {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
         restTemplate = applicationContext.getBean("restTemplate", RestTemplate.class);
+        marshaller = applicationContext.getBean("jaxbMarshaller", Marshaller.class);
+        unmarshaller = applicationContext.getBean("jaxbMarshaller", Unmarshaller.class);
     }
 
 	after(Notification notification) returning: execution (* ($packageName.$typeName).notifyChanged(..)) && args(notification) {
@@ -188,7 +198,22 @@ public aspect EcoreAspect_$typeName {
         return returnValue;
     }
     
-
+    public static String marshal($type object) throws Exception {
+    	String returnValue;
+    	$imbTypePackage.$type imbType;
+    	ByteArrayOutputStream outputStream;
+    	
+    	imbType = convertToImb$type(object);
+    	outputStream = new ByteArrayOutputStream();
+	    marshaller.marshal(imbType, new StreamResult(outputStream));
+	    
+	    returnValue = new String(outputStream.toByteArray(), "UTF-8");
+	    return returnValue;
+    }
+    
+    public static $type unmarshal() {
+    	return null;
+    }
     
     #end
     

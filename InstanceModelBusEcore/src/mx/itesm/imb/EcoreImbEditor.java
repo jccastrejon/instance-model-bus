@@ -37,11 +37,17 @@ public class EcoreImbEditor {
     /**
      * 
      */
+    private static Template selectionTemplate;
+
+    /**
+     * 
+     */
     private static boolean velocityInit = false;
 
     static {
         EcoreImbEditor.aspectTemplate = EcoreImbEditor.getEcoreTemplate();
         EcoreImbEditor.controllerTemplate = EcoreImbEditor.getControllerTemplate();
+        EcoreImbEditor.selectionTemplate = EcoreImbEditor.getSelectionTemplate();
     }
 
     public static void main(String[] args) {
@@ -108,7 +114,7 @@ public class EcoreImbEditor {
         }
 
         typesPackage = typesPackage.replace(".provider", "");
-        EcoreImbEditor.updateSelectionService(ecoreProject, templateProject, typesPackage, types);
+        EcoreImbEditor.writeSelectionAspect(ecoreProject, typesPackage, types);
     }
 
     /**
@@ -200,6 +206,8 @@ public class EcoreImbEditor {
             // Copy lib
             FileUtils.copyDirectory(new File(templateProject, "/lib.rest"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".edit/lib"));
+            FileUtils.copyDirectory(new File(templateProject, "/lib.rest"), new File(ecoreProject.getParent(),
+                    ecoreProject.getName() + ".editor/lib"));
 
             // Add rest configuration
             templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/beans.xml"));
@@ -210,21 +218,32 @@ public class EcoreImbEditor {
             templateContent = templateContent.replace("<!-- oxm -->", oxmConfiguration);
             FileUtils.writeStringToFile(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/beans.xml"),
                     templateContent);
+            FileUtils.writeStringToFile(
+                    new File(ecoreProject.getParent(), ecoreProject.getName() + ".editor/beans.xml"), templateContent);
 
             // Copy imb types
             FileUtils.copyDirectory(new File(busProject, "/src/main/java/imb"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".edit/src/imb"));
+            FileUtils.copyDirectory(new File(busProject, "/src/main/java/imb"), new File(ecoreProject.getParent(),
+                    ecoreProject.getName() + ".editor/src/imb"));
 
             // Update classpath
             FileUtils.copyFile(new File(templateProject, "templates/classpath.xml"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".edit/.classpath"));
+            FileUtils.copyFile(new File(templateProject, "templates/classpath.xml"), new File(ecoreProject.getParent(),
+                    ecoreProject.getName() + ".editor/.classpath"));
             templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/project.xml"));
             FileUtils.writeStringToFile(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/.project"),
+                    templateContent.replace("${projectName}", ecoreProject.getName()));
+            FileUtils.writeStringToFile(
+                    new File(ecoreProject.getParent(), ecoreProject.getName() + ".editor/.project"),
                     templateContent.replace("${projectName}", ecoreProject.getName()));
 
             // Update Manifest
             bundleActivator = null;
             exportPackage = null;
+
+            // edit project
             manifestFile = new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/META-INF/MANIFEST.MF");
             for (String line : (List<String>) FileUtils.readLines(manifestFile)) {
                 if (line.startsWith("Bundle-Activator")) {
@@ -238,6 +257,22 @@ public class EcoreImbEditor {
             templateContent = templateContent.replace("${bundleActivator}", bundleActivator);
             templateContent = templateContent.replace("${exportPackage}", exportPackage);
             FileUtils.writeStringToFile(manifestFile, templateContent);
+
+            // editor project
+            manifestFile = new File(ecoreProject.getParent(), ecoreProject.getName() + ".editor/META-INF/MANIFEST.MF");
+            for (String line : (List<String>) FileUtils.readLines(manifestFile)) {
+                if (line.startsWith("Bundle-Activator")) {
+                    bundleActivator = line.replace("Bundle-Activator: ", "");
+                } else if (line.startsWith("Export-Package: ")) {
+                    exportPackage = line.replace("Export-Package: ", "");
+                }
+            }
+            templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/manifest.editor.MF"));
+            templateContent = templateContent.replaceAll("\\$\\{projectName\\}", ecoreProject.getName());
+            templateContent = templateContent.replace("${bundleActivator}", bundleActivator);
+            templateContent = templateContent.replace("${exportPackage}", exportPackage);
+            FileUtils.writeStringToFile(manifestFile, templateContent);
+
         } catch (Exception e) {
             System.out.println("Error while configuring Rest template: " + e.getMessage());
         }
@@ -329,16 +364,15 @@ public class EcoreImbEditor {
     }
 
     @SuppressWarnings("unchecked")
-    private static void updateSelectionService(final File ecoreProject, final File templateProject,
-            final String typesPackage, final List<String> types) {
+    private static void writeSelectionAspect(final File ecoreProject, final String typesPackage,
+            final List<String> types) {
+        Writer writer;
+        String packageName;
+        VelocityContext context;
         StringBuilder validTypes;
-        String contributorContent;
-        String contributorTemplate;
-        String contributorLastContent;
         Collection<File> contributorFiles;
 
         try {
-            contributorTemplate = FileUtils.readFileToString(new File(templateProject, "/templates/Contributor.txt"));
             validTypes = new StringBuilder();
             for (String type : types) {
                 if (!type.toLowerCase().equals("system")) {
@@ -359,16 +393,22 @@ public class EcoreImbEditor {
                 }
             }, TrueFileFilter.INSTANCE);
 
-            contributorTemplate = contributorTemplate.replace("$typesPackage", typesPackage);
-            contributorTemplate = contributorTemplate.replace("$validTypes", validTypes.toString());
             for (File contributor : contributorFiles) {
-                contributorContent = FileUtils.readFileToString(contributor);
-                contributorLastContent = contributorContent.substring(contributorContent
-                        .indexOf("// Remove any menu items for old selection."));
-                contributorContent = contributorContent.substring(0,
-                        contributorContent.indexOf("public void selectionChanged(SelectionChangedEvent event) {"));
-                contributorContent = contributorContent + contributorTemplate + contributorLastContent;
-                FileUtils.writeStringToFile(contributor, contributorContent);
+                context = new VelocityContext();
+                packageName = contributor
+                        .getPath()
+                        .substring(contributor.getPath().indexOf("src") + "src".length() + 1,
+                                contributor.getPath().indexOf(contributor.getName().replace(".java", "")) - 1)
+                        .replace('/', '.');
+
+                context.put("validTypes", validTypes);
+                context.put("packageName", packageName);
+                context.put("typesPackage", typesPackage);
+                context.put("contributor", contributor.getName().replace(".java", ""));
+
+                writer = new FileWriter(new File(contributor.getParentFile(), "SelectionAspect.aj"));
+                EcoreImbEditor.selectionTemplate.merge(context, writer);
+                writer.close();
                 break;
             }
         } catch (Exception e) {
@@ -404,6 +444,23 @@ public class EcoreImbEditor {
         try {
             EcoreImbEditor.initVelocity();
             returnValue = Velocity.getTemplate("mx/itesm/imb/EcoreController.vml");
+        } catch (Exception e) {
+            returnValue = null;
+        }
+
+        return returnValue;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    private static Template getSelectionTemplate() {
+        Template returnValue;
+
+        try {
+            EcoreImbEditor.initVelocity();
+            returnValue = Velocity.getTemplate("mx/itesm/imb/SelectionAspect.vml");
         } catch (Exception e) {
             returnValue = null;
         }
