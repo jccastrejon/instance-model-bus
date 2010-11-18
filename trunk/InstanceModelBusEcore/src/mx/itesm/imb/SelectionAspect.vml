@@ -76,7 +76,7 @@ public aspect SelectionAspect {
 						break;
 					}
 				} catch(Exception e) {
-					System.out.println("Unable to save local state for: " + selectedElement + " :" + e.getMessage());
+					// No-op
 				}
 			}
 			
@@ -96,7 +96,7 @@ public aspect SelectionAspect {
 					localState.delete();
 					this.getRemoteState().delete();
 				} catch(Exception e) {
-					System.out.println("Unable to remove local state: " + e.getMessage());
+					// No-op
 				}
 			}
 		}
