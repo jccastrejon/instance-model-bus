@@ -13,7 +13,9 @@ Bundle-ClassPath: .,
  lib/org.springframework.oxm-3.0.5.RELEASE.jar,
  lib/org.springframework.web-3.0.5.RELEASE.jar,
  lib/org.springframework.asm-3.0.5.RELEASE.jar,
- lib/org.springframework.expression-3.0.5.RELEASE.jar
+ lib/org.springframework.expression-3.0.5.RELEASE.jar,
+ lib/jaxen.jar,
+ lib/jdom.jar
 Bundle-Activator: ${bundleActivator}
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
