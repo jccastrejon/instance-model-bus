@@ -26,9 +26,14 @@ public class ImbCommands implements CommandMarker {
     public void updateController() {
         operations.updateControllers();
     }
-    
+
     @CliCommand(value = "imb generate schemas", help = "Generates XML Schemas for the entities of an application")
     public void generateSchemas() {
         operations.generateEntitiesSchemas();
+    }
+
+    @CliCommand(value = "imb generate notificationScheduling", help = "Generate the artifacts needed for the notification scheduling")
+    public void generatedNotificationScheduling() {
+        operations.generatedNotificationScheduling();
     }
 }

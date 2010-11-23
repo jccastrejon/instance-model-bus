@@ -3,6 +3,19 @@ persistence setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY
 jaxb xsd compiler setup --generateDirectory src/main/java
 http resource representation setup
 
-entity --class mx.itesm.ecore.domain.Foo
-field string --fieldName name
+// Notification scheduling
+enum type --class mx.itesm.ecore.domain.ImbNotificationType
+enum constant --name CreateEntity
+enum constant --name UpdateEntity
+enum constant --name DeleteEntity
+
+entity --class mx.itesm.ecore.domain.ImbNotification
+field string --fieldName url
+field string --fieldName entity
+field string --fieldName entityName
+field string --fieldName returnTypeClass
+field number --fieldName entityId --type java.lang.Long
+field enum --type mx.itesm.ecore.domain.ImbNotificationType --fieldName type
+imb generate notificationScheduling
+
 controller all --package mx.itesm.ecore.web

@@ -14,6 +14,7 @@
             <provide interface="mx.itesm.imb.ImbOperations"/>
         </service>
         <property name="service.pid" value="mx.itesm.imb.ImbOperationsImpl"/>
+        <reference name="projectOperations" interface="org.springframework.roo.project.ProjectOperations" cardinality="1..1" policy="static" bind="bindProjectOperations" unbind="unbindProjectOperations"/>
         <reference name="metadataService" interface="org.springframework.roo.metadata.MetadataService" cardinality="1..1" policy="static" bind="bindMetadataService" unbind="unbindMetadataService"/>
         <reference name="fileManager" interface="org.springframework.roo.process.manager.FileManager" cardinality="1..1" policy="static" bind="bindFileManager" unbind="unbindFileManager"/>
         <reference name="pathResolver" interface="org.springframework.roo.project.PathResolver" cardinality="1..1" policy="static" bind="bindPathResolver" unbind="unbindPathResolver"/>

@@ -2,8 +2,8 @@ package $controllerPackage;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.ConnectException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -20,6 +20,8 @@ import javax.xml.transform.stream.StreamSource;
 import $typePackage.$type;
 import $typePackage. LocalEntity;
 import $typePackage. RemoteEntity;
+import $typePackage. ImbNotification;
+import $typePackage. ImbNotificationType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -140,14 +142,15 @@ public aspect $controllerType.toString()_Roo_Imb {
 			// Set IMB Id before communicating with the IMB bus
 			object.setImbId(System.currentTimeMillis() + new Random().nextInt());
 			object.merge();
-		
-			restTemplate.put("$imbAddress" + "/imb/create/{object}/Spring", 
-				$controllerType.toString()_Roo_Imb. transformToImb$type (object), "$type.toLowerCase()");
+			
+			new Thread(new NotificationThread(ImbNotificationType.CreateEntity, 
+												"$imbAddress" + "/imb/create/{object}/Spring",
+												$controllerType.toString()_Roo_Imb. transformToImb$type (object),
+												"$type.toLowerCase()",
+												object,
+												marshaller)).start();
 		} catch(Exception e) {
-			// Retry connection
-			if(ConnectException.class.isAssignableFrom(e.getClass())) {
-				System.out.println("Unable to communicate with the bus, will try again later");
-			}
+			System.out.println("Unable to create entity: " + e.getMessage());
 		}
 	}
 	
@@ -172,25 +175,29 @@ public aspect $controllerType.toString()_Roo_Imb {
     		}
     		
     		$controllerType.toString()_Roo_Imb. removeLocalAndRemoteEntities();
-			restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Spring/{id}", 
-				$controllerType.toString()_Roo_Imb. transformToImb$type (persistentObject), Boolean.class, "$type.toLowerCase()", persistentObject.getImbId());
+    		new Thread(new NotificationThread(ImbNotificationType.UpdateEntity, 
+    											"$imbAddress" + "/imb/update/{object}/Spring/{id}",
+    											$controllerType.toString()_Roo_Imb. transformToImb$type (persistentObject),
+    											Boolean.class, 
+    											"$type.toLowerCase()", 
+    											persistentObject.getImbId(),
+    											persistentObject,
+    											marshaller)).start();
 		} catch(Exception e) {
-			// Retry connection
-			if(ConnectException.class.isAssignableFrom(e.getClass())) {
-				System.out.println("Unable to communicate with the bus, will try again later");
-			}
+			System.out.println("Unable to update entity: " + e.getMessage());
 		}
 	}
 	
 	before(Long id, Integer page, Integer size, Model model) : 
 		execution (* ($controllerPackage.$controllerType).delete(..)) && args(id, page, size, model) {
 		try {
-			restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Spring/{id}", "$type.toLowerCase()", $type. find$type (id).getImbId());
+		
+			new Thread(new NotificationThread(ImbNotificationType.DeleteEntity, 
+												"$imbAddress" + "/imb/delete/{object}/Spring/{id}", 
+												"$type.toLowerCase()", 
+												$type. find$type (id).getImbId())).start();
 		} catch(Exception e) {
-			// Retry connection
-			if(ConnectException.class.isAssignableFrom(e.getClass())) {
-				System.out.println("Unable to communicate with the bus, will try again later");
-			}
+			System.out.println("Unable to delete entity: " + e.getMessage());
 		}
 	}
 	
@@ -523,4 +530,90 @@ public aspect $controllerType.toString()_Roo_Imb {
     	return returnValue;
     } 
     
+    class NotificationThread implements Runnable {
+    	private String url;
+    	private $type object;
+		private Long entityId;
+		private String entityName;
+		private boolean failedDelivery;
+		private String returnTypeClass;
+		private Marshaller marshaller;
+		private ImbNotification notification;
+		private ImbNotificationType notificationType;
+		private $imbTypePackage.$type unmarshalledObject;
+		
+		public NotificationThread(final ImbNotificationType notificationType, final String url, final String entityName, final Long entityId) {
+			this.url = url;
+			this.entityId = entityId;
+			this.entityName = entityName;
+			this.notificationType = notificationType;
+		}
+		
+		public NotificationThread(final ImbNotificationType notificationType, final String url, final $imbTypePackage.$type unmarshalledObject, 
+									final Class<?> returnTypeClass, final String entityName, final Long entityId, $type object, Marshaller marshaller) {
+			this.url = url;
+			this.object = object;
+			this.entityId = entityId;
+			this.entityName = entityName;
+			this.marshaller = marshaller;
+			this.notificationType = notificationType;
+			this.unmarshalledObject = unmarshalledObject;
+		}
+		
+		public NotificationThread(final ImbNotificationType notificationType, final String url, 
+									final $imbTypePackage.$type unmarshalledObject, final String entityName, $type object, Marshaller marshaller) {
+			this.url = url;
+			this.object = object;
+			this.entityName = entityName;
+			this.marshaller = marshaller;
+			this.notificationType = notificationType;
+			this.unmarshalledObject = unmarshalledObject;
+		}
+		
+    	@Override
+		public void run() {
+			try {
+				switch(this.notificationType) {
+					case CreateEntity:
+						restTemplate.put(url, unmarshalledObject, entityName);
+						break;
+				
+					case UpdateEntity:
+						restTemplate.postForObject(url, unmarshalledObject, Class.forName(returnTypeClass), entityName, entityId);
+						break;
+					
+					case DeleteEntity:
+						restTemplate.delete(url, entityName, entityId);
+						break;
+				}
+			} catch(Exception e) {
+				// If failed to deliver, register for notification scheduling
+				failedDelivery = false;
+				if(IOException.class.isAssignableFrom(e.getClass())) {
+					failedDelivery = true;
+				} else if((e.getCause() != null) && (IOException.class.isAssignableFrom(e.getCause().getClass()))) {
+					failedDelivery = true;
+				}
+				
+				if(failedDelivery) {
+					notification = new ImbNotification();
+					notification.setUrl(url);
+					notification.setEntityId(entityId);
+					notification.setEntityName(entityName);
+					notification.setType(notificationType);
+					notification.setReturnTypeClass(returnTypeClass);
+					
+					if((object != null) && (marshaller != null)) {
+						try {
+							notification.setEntity(new String(object.marshal(marshaller).toByteArray(), "UTF-8"));
+						} catch(Exception marshalException) {
+							System.out.println("Unable to marshall entity for notification: " + marshalException.getMessage());
+						}
+					}
+					
+					notification.persist();
+				}
+			}
+		}
+    }
 }

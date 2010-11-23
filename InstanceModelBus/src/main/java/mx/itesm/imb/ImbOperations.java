@@ -22,10 +22,9 @@ public interface ImbOperations {
      * Generate XML schemas for the entities associated to MVC controllers
      */
     void generateEntitiesSchemas();
-
+    
     /**
-     * Update the Spring configuration with the marshalling data of the entities
-     * associated to MVC controllers
+     * Generate the artifacts needed for the notification scheduling
      */
-    void updateMarshallingConfiguration();
+    void generatedNotificationScheduling();
 }
