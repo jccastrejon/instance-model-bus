@@ -557,6 +557,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 			this.entityName = entityName;
 			this.marshaller = marshaller;
 			this.notificationType = notificationType;
+			this.returnTypeClass = returnTypeClass.getName();
 			this.unmarshalledObject = unmarshalledObject;
 		}
 		
