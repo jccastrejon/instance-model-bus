@@ -125,6 +125,7 @@ public class ImbBusController {
 			this.entityName = entityName;
 			this.marshaller = marshaller;
 			this.notificationType = notificationType;
+			this.returnTypeClass = returnTypeClass.getName();
 			this.unmarshalledObject = unmarshalledObject;
 		}
 		
