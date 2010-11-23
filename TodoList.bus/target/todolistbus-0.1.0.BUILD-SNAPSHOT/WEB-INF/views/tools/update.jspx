@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_mx_itesm_todolistbus_domain_Tool" modelAttribute="tool" path="/tools" z="6oCo+FlkMJcbjtktySf5hMkl1/o=">
+        <field:select field="name" id="c_mx_itesm_todolistbus_domain_Tool_name" items="${toolnames}" path="toolnames" z="PJvgLYT/1aEmn6E0Y+k67NXeeiI="/>
+        <field:input field="description" id="c_mx_itesm_todolistbus_domain_Tool_description" z="7VoA4diebLP1o6S5FcvuZQpI8Rs="/>
+        <field:input field="ipAddress" id="c_mx_itesm_todolistbus_domain_Tool_ipAddress" z="ee17hRjQ/7nHb5AQ3SCWMsSbHXY="/>
+        <field:input field="port" id="c_mx_itesm_todolistbus_domain_Tool_port" z="4pIjZ9NGcuChcnoAppKksWa4U0M="/>
+        <field:input field="contextPath" id="c_mx_itesm_todolistbus_domain_Tool_contextPath" z="SJXgFlIUTMhCrlTdiMCY63O+htg="/>
+    </form:update>
+</div>

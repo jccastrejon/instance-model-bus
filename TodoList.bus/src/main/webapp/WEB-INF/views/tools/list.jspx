@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:list id="pl_mx_itesm_todolistbus_domain_Tool" items="${tools}" z="AHWdm3H3bBvPHQSNOLupZ7PHNDE=">
+        <table:table data="${tools}" id="l_mx_itesm_todolistbus_domain_Tool" path="/tools" z="3ta/pD/0rlUDv7S+5DZG71MtgfI=">
+            <table:column id="c_mx_itesm_todolistbus_domain_Tool_name" property="name" z="l5zK/24/ey0WmycR7lbIp8lMkro="/>
+            <table:column id="c_mx_itesm_todolistbus_domain_Tool_description" property="description" z="N6CxiWUa8t8VM7xxu0iryIh09BQ="/>
+            <table:column id="c_mx_itesm_todolistbus_domain_Tool_ipAddress" property="ipAddress" z="g1eBDbrIeBh+bhp7UBIny7C4U8Y="/>
+            <table:column id="c_mx_itesm_todolistbus_domain_Tool_port" property="port" z="TdAVbPrvPBp2CL0h5f2Rczt41oQ="/>
+            <table:column id="c_mx_itesm_todolistbus_domain_Tool_contextPath" property="contextPath" z="4GCGYcFemzKU+sSK0VS9Zm2LujQ="/>
+        </table:table>
+    </page:list>
+</div>
