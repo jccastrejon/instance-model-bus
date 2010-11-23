@@ -26,9 +26,13 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.roo.file.monitor.event.FileDetails;
 import org.springframework.roo.metadata.MetadataService;
 import org.springframework.roo.process.manager.FileManager;
+import org.springframework.roo.project.Dependency;
 import org.springframework.roo.project.Path;
 import org.springframework.roo.project.PathResolver;
 import org.springframework.roo.project.ProjectMetadata;
+import org.springframework.roo.project.ProjectOperations;
+import org.springframework.roo.support.util.FileCopyUtils;
+import org.springframework.roo.support.util.TemplateUtils;
 
 /**
  * Implementation of IMB commands that are available via the Roo shell.
@@ -46,6 +50,9 @@ public class ImbOperationsImpl implements ImbOperations {
 
     @Reference
     private FileManager fileManager;
+
+    @Reference
+    private ProjectOperations projectOperations;
 
     /**
      * ImbAspect velocity template.
@@ -298,10 +305,55 @@ public class ImbOperationsImpl implements ImbOperations {
     }
 
     /**
-     * @see mx.itesm.imb.ImbCommands#updateMarshallingConfiguration()
+     * @see mx.itesm.imb.ImbCommands#generatedNotificationScheduling()
      */
-    public void updateMarshallingConfiguration() {
-        logger.log(Level.INFO, "Updating Spring configuration...");
+    public void generatedNotificationScheduling() {
+        String schedulingTask;
+        File schedulingTaskFile;
+        String schedulingTaskContents;
+        String schedulingConfiguration;
+        ProjectMetadata projectMetadata;
+
+        // Add quartz configuration
+        projectOperations.addDependency(new Dependency("opensymphony", "quartz", "1.6.0"));
+        
+        // Add http-client configuration
+        projectOperations.addDependency(new Dependency("commons-httpclient", "commons-httpclient", "3.1"));
+
+        // Copy configuration and task files
+        schedulingConfiguration = pathResolver.getIdentifier(Path.SPRING_CONFIG_ROOT,
+                "applicationContext-scheduling.xml");
+        schedulingTask = pathResolver.getIdentifier(Path.SRC_MAIN_JAVA, "/mx/itesm/imb/NotificationTask.java");
+        this.createFile(schedulingConfiguration, "applicationContext-scheduling-template.xml");
+        this.createFile(schedulingTask, "NotificationTask-template.java");
+
+        // Replace type packages
+        try {
+            schedulingTaskFile = new File(schedulingTask);
+            projectMetadata = (ProjectMetadata) metadataService.get(ProjectMetadata.getProjectIdentifier());
+            schedulingTaskContents = FileUtils.readFileToString(schedulingTaskFile);
+            schedulingTaskContents = schedulingTaskContents.replace("$typePackage", projectMetadata
+                    .getTopLevelPackage().getFullyQualifiedPackageName());
+            FileUtils.writeStringToFile(schedulingTaskFile, schedulingTaskContents);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * 
+     * @param fileIdentifier
+     * @param templateName
+     */
+    private void createFile(final String fileIdentifier, final String templateName) {
+        if (!fileManager.exists(fileIdentifier)) {
+            try {
+                FileCopyUtils.copy(TemplateUtils.getTemplate(getClass(), templateName),
+                        fileManager.createFile(fileIdentifier).getOutputStream());
+            } catch (IOException ioe) {
+                throw new IllegalStateException(ioe);
+            }
+        }
     }
 
     /**

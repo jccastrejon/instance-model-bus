@@ -1,0 +1,83 @@
+package mx.itesm.imb;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.TimerTask;
+
+import javax.xml.transform.stream.StreamSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.oxm.Unmarshaller;
+import org.springframework.web.client.RestTemplate;
+
+public class NotificationController extends TimerTask {
+
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    @Autowired
+    private Unmarshaller unmarshaller;
+
+    @Override
+    public void run() {
+    	List<ImbNotification> notifications;
+    	
+    	notifications = ImbNotification.findAllNotifications();
+    	if((notifications != null) && (!notifications.isEmpty())) {
+    		for(ImbNotification notification : notifications) {
+    			new Thread(new NotificationThread(notification, restTemplate, unmarshaller)).start();
+    		}
+    	}
+    }
+    
+    class NotificationThread implements Runnable {
+    	boolean failedDelivery;
+    	ImbNotification notification;
+    	RestTemplate restTemplate;
+    	Unmarshaller unmarshaller;
+    	
+    	public NotificationThread(ImbNotification notification, RestTemplate restTemplate, Unmarshaller unmarshaller) {
+    		this.notification = notification;
+    		this.restTemplate = restTemplate;
+    		this.unmarshaller = unmarshaller;
+    	}
+    	
+    	@Override
+		public void run() {
+			Object unmarshalledObject;
+			
+			if(notification.getEntity() != null) {
+				unmarshalledObject = unmarshaller.unmarshal(new StreamSource(new ByteArrayInputStream(notification.getEntity().getBytes("UTF-8")));
+			}
+			
+			try {
+				switch(notification.getType()) {
+					case CreateEntity:
+						restTemplate.put(notification.getUrl(), unmarshalledObject, notification.getEntityName());
+						break;
+					
+					case UpdateEntity:
+						restTemplate.postForObject(notification.getUrl(), unmarshalledObject, 
+							Class.forName(notification.getReturnTypeClass()), notification.getEntityName(), notification.getEntityId());
+						break;
+					
+					case DeleteEntity:
+						restTemplate.delete(notification.getUrl(), notification.getEntityName(), notification.getEntityId());
+						break;
+				}
+			} catch(Exception e) {
+				failedDelivery = false;
+				if(IOException.class.isAssignableFrom(e.getClass())) {
+					failedDelivery = true;
+				} else if((e.getCause() != null) && (IOException.class.isAssignableFrom(e.getCause().getClass()))) {
+					failedDelivery = true;
+				}
+				
+				// Remove the notification if it was delivered
+				if(!failedDelivery) {
+					notification.remove();
+				}
+			}
+		}
+    }
+}

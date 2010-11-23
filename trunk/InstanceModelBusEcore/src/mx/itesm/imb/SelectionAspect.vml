@@ -118,6 +118,7 @@ public aspect SelectionAspect {
     	Object unmarshalledObject;
     	Object localObject;
     	Object remoteObject;
+    	Method imbIdMethod;
     	
     	// Locate the corresponding instance in the XML file
         saxBuilder = new SAXBuilder();
@@ -131,9 +132,9 @@ public aspect SelectionAspect {
     		unmarshalledObject = this.getObject(this.getLocalState());
     		if(unmarshalledObject != null) {
     			if(object.getClass().isAssignableFrom(unmarshalledObject.getClass())) {
-    				localObject = unmarshalledObject;
-    				if(!localObject.getImbId().equals(imbId)) {
-    				    localObject = null;
+    				imbIdMethod = unmarshalledObject.getClass().getDeclaredMethod("getImbId");
+    				if(imbIdMethod.invoke(unmarshalledObject).equals(imbId)) {
+    				    localObject = unmarshalledObject;
     				}
     			}
     		}
@@ -143,9 +144,9 @@ public aspect SelectionAspect {
     		unmarshalledObject = this.getObject(this.getRemoteState());
     		if(unmarshalledObject != null) {
     			if(object.getClass().isAssignableFrom(unmarshalledObject.getClass())) {
-    				remoteObject = unmarshalledObject;
-    				if(!remoteObject.getImbId().equals(imbId)) {
-    				    remoteObject = null;
+    				imbIdMethod = unmarshalledObject.getClass().getDeclaredMethod("getImbId");
+    				if(imbIdMethod.invoke(unmarshalledObject).equals(imbId)) {
+    				    remoteObject = unmarshalledObject;
     				}
     			}
     		}

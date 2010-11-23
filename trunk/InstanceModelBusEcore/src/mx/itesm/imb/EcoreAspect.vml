@@ -3,7 +3,6 @@ package $packageName;
 
 import java.lang.reflect.Method;
 
-#if ($generateHelperMethod)
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
@@ -11,10 +10,9 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-#end
 
 import java.io.File;
-import java.net.ConnectException;
+import java.io.IOException;
 import java.util.Random;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -71,12 +69,12 @@ public aspect EcoreAspect_$typeName {
 						imbType = EcoreAspect_$typeName. getImbType(referenceName, newValue);
 						
 						// Send to the Imb
-						restTemplate.put("$imbAddress" + "/imb/create/{object}/Eclipse", imbType, referenceName.toLowerCase());
+						new Thread(new NotificationThread("CreateEntity", 
+															"$imbAddress" + "/imb/create/{object}/Eclipse",
+															imbType, 
+															referenceName.toLowerCase())).start();
 					} catch(Exception e) {
-						// Retry connection
-						if(ConnectException.class.isAssignableFrom(e.getClass())) {
-							System.out.println("Unable to communicate with the bus, will try again later");
-						}
+						System.out.println("Unable to communicate with the bus, will try again later");
 					}
 				}
 			break;
@@ -94,13 +92,14 @@ public aspect EcoreAspect_$typeName {
 				
 					// Send to the Imb
 					idMethod = notifier.getClass().getMethod("getImbId");
-					restTemplate.postForObject("$imbAddress" + "/imb/update/{object}/Eclipse/{id}", imbType, Boolean.class, 
-						containingClass.toLowerCase(), idMethod.invoke(notifier));
+					new Thread(new NotificationThread("UpdateEntity",
+														"$imbAddress" + "/imb/update/{object}/Eclipse/{id}",
+														imbType, 
+														Boolean.class,
+														containingClass.toLowerCase(), 
+														Long.parseLong(idMethod.invoke(notifier).toString()))).start();
 				} catch(Exception e) {
-					// Retry connection
-					if(ConnectException.class.isAssignableFrom(e.getClass())) {
-						System.out.println("Unable to communicate with the bus, will try again later");
-					}
+					System.out.println("Unable to communicate with the bus, will try again later");
 				}
 			break;
 				
@@ -111,13 +110,12 @@ public aspect EcoreAspect_$typeName {
 					referenceNameParts = referenceName.split("\\.");
 					referenceName = referenceNameParts[referenceNameParts.length-1].toLowerCase();
 					idMethod = oldValue.getClass().getMethod("getImbId");
-					restTemplate.delete("$imbAddress" + "/imb/delete/{object}/Eclipse/{id}", 
-						referenceName, idMethod.invoke(oldValue));
+					new Thread(new NotificationThread("DeleteEntity",
+														"$imbAddress" + "/imb/delete/{object}/Eclipse/{id}",
+														referenceName, 
+														Long.parseLong(idMethod.invoke(oldValue).toString()))).start();
 				} catch(Exception e) {
-					// Retry connection
-					if(ConnectException.class.isAssignableFrom(e.getClass())) {
-						System.out.println("Unable to communicate with the bus, will try again later");
-					}
+					System.out.println("Unable to communicate with the bus, will try again later");
 				}
 			break;
 		}
@@ -221,6 +219,104 @@ public aspect EcoreAspect_$typeName {
     }
     
     #end
+    
+    class NotificationThread implements Runnable {
+    	private String url;
+		private Long entityId;
+		private String entityName;
+		private boolean failedDelivery;
+		private String returnTypeClass;
+		private String notificationType;
+		private Object unmarshalledObject;
+		
+		public NotificationThread(final String notificationType, final String url, final String entityName, final Long entityId) {
+			this.url = url;
+			this.entityId = entityId;
+			this.entityName = entityName;
+			this.notificationType = notificationType;
+		}
+		
+		public NotificationThread(final String notificationType, final String url, final Object unmarshalledObject, 
+									final Class<?> returnTypeClass, final String entityName, final Long entityId) {
+			this.url = url;
+			this.entityId = entityId;
+			this.entityName = entityName;
+			this.returnTypeClass = returnTypeClass.getName();
+			this.notificationType = notificationType;
+			this.unmarshalledObject = unmarshalledObject;
+		}
+		
+		public NotificationThread(final String notificationType, final String url, 
+									final Object unmarshalledObject, final String entityName) {
+			this.url = url;
+			this.entityName = entityName;
+			this.notificationType = notificationType;
+			this.unmarshalledObject = unmarshalledObject;
+		}
+		
+    	@Override
+		public void run() {
+			try {
+				if(notificationType.equals("CreateEntity")) {
+					restTemplate.put(url, unmarshalledObject, entityName);
+				} else if(notificationType.equals("UpdateEntity")) {
+					restTemplate.postForObject(url, unmarshalledObject, Class.forName(returnTypeClass), entityName, entityId);
+				} else if(notificationType.equals("DeleteEntity")) {
+					restTemplate.delete(url, entityName, entityId);
+				}
+			} catch(Exception e) {
+				// If failed to deliver, register for notification scheduling
+				failedDelivery = false;
+				if(IOException.class.isAssignableFrom(e.getClass())) {
+					failedDelivery = true;
+				} else if((e.getCause() != null) && (IOException.class.isAssignableFrom(e.getCause().getClass()))) {
+					failedDelivery = true;
+				}
+				
+				if(failedDelivery) {
+					//TODO: Change for property value
+					restTemplate.put("http://localhost:8080/ecore/" + entityName + "s/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}", 
+										unmarshalledObject, this.getValidUrl(url), this.getValidValue(entityId), this.getValidValue(entityName), 
+										this.getValidValue(notificationType), this.getValidValue(returnTypeClass));
+				}
+			}
+		}
+		
+		private String getValidUrl(final String url) {
+			String returnValue;
+			
+			returnValue = url;
+			if(url != null) {
+				returnValue = returnValue.replace(":", "_").replace("/", "-").replace("{", "<").replace("}", ">");
+			} else {
+				returnValue = "null";
+			}
+			
+			return returnValue;
+		}
+		
+		private String getValidValue(final String currentValue) {
+			String returnValue;
+			
+			returnValue = currentValue;
+			if((currentValue == null) || ((currentValue != null) && (currentValue.trim().equals("")))) {
+				returnValue = "null";
+			}
+			
+			return returnValue;
+		}
+		
+		private Long getValidValue(final Long currentValue) {
+            Long returnValue;
+            
+            returnValue = currentValue;
+            if(currentValue == null) {
+                returnValue = 0L;
+            }
+            
+            return returnValue;
+        }
+    }
     
     
     // TODO: Change File resolution:.

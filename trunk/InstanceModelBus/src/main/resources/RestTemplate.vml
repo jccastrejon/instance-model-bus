@@ -1,10 +1,24 @@
-    	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+	<bean class="org.springframework.web.client.RestTemplate" id="restTemplate">
+    	<constructor-arg>
+			<bean class="org.springframework.http.client.CommonsClientHttpRequestFactory">
+				<constructor-arg>
+					<bean class="org.apache.commons.httpclient.HttpClient">
+						<constructor-arg>
+							<bean class="org.apache.commons.httpclient.params.HttpClientParams">
+								<property name="soTimeout" value="4000" />
+							</bean>		
+						</constructor-arg>
+						<property name="connectionTimeout" value="4000" />
+					</bean>
+				</constructor-arg>
+				<property name="readTimeout" value="4000" />
+			</bean>
+		</constructor-arg>
 		<property name="messageConverters">
 			<list>
-				<bean
-					class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter">
-					<property name="marshaller" ref="jaxbMarshaller" />
-					<property name="unmarshaller" ref="jaxbMarshaller" />
+				<bean class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter">
+					<property name="marshaller" ref="jaxbMarshaller"/>
+					<property name="unmarshaller" ref="jaxbMarshaller"/>
 				</bean>
 			</list>
 		</property>

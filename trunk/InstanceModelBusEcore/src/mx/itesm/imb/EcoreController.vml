@@ -6,13 +6,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.ConnectException;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import mx.itesm.ecore.domain.ImbNotificationType;
+import mx.itesm.ecore.domain.ImbNotification;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -44,6 +47,32 @@ public class EcoreController$type {
     
     @Autowired
     private Unmarshaller unmarshaller;
+    
+    // http://localhost:8080/ecore/" + entityName + "s/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}
+    @RequestMapping(value = "/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}", method = RequestMethod.PUT)
+    public boolean update(@PathVariable("url") String url, @PathVariable("entityId") Long entityId, @PathVariable("entityName") String entityName,
+							@PathVariable("notificationType") String notificationType, @PathVariable("returnTypeClass") String returnTypeClass, 
+							@RequestBody $imbTypePackage.$type object) {
+		ImbNotification notification;
+		
+		notification = new ImbNotification();
+		notification.setUrl(url.replace("_", ":").replace("-", "/").replace("<", "{").replace(">", "}"));
+		notification.setEntityId(entityId);
+		notification.setEntityName(entityName);
+		notification.setType(ImbNotificationType.valueOf(notificationType));
+		notification.setReturnTypeClass(returnTypeClass);
+					
+		if(object != null) {
+			try {
+				notification.setEntity(this.marshal(object));
+			} catch(Exception marshalException) {
+				System.out.println("Unable to marshall entity for notification: " + marshalException.getMessage());
+			}			
+		}
+		notification.persist();
+		
+		return true;
+    }
     
     @RequestMapping(value = "/create/$type.toLowerCase()", method = RequestMethod.PUT)
     public void create(@RequestBody $imbTypePackage.$type object) {
@@ -191,7 +220,7 @@ public class EcoreController$type {
     			if($imbTypePackage.$type. class.isAssignableFrom(unmarshalledObject.getClass())) {
     				remoteObject = ($imbTypePackage.$type) unmarshalledObject;
     				if(!remoteObject.getImbId().equals(imbId)) {
-    				    remoteObjectObject = null;
+    				    remoteObject = null;
     				}
     			}
     		}
