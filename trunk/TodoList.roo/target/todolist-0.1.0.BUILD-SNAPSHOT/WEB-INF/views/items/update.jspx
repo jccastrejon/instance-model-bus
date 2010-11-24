@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_mx_itesm_todolist_domain_Item" modelAttribute="item" path="/items" z="ASk6x0KkmmoBtgiRZXK25+boNyE=">
+        <field:input field="name" id="c_mx_itesm_todolist_domain_Item_name" z="Wbwt/lN4NUCj3DOPtHk+gbLECIY="/>
+        <field:input field="description" id="c_mx_itesm_todolist_domain_Item_description" z="TwNKIsbHpUFAjL9UnzqDveDpV6Q="/>
+        <field:select field="priority" id="c_mx_itesm_todolist_domain_Item_priority" items="${prioritys}" path="prioritys" z="vw5k+Ub82JGOokuo8KJFHtRgVEE="/>
+        <field:datetime dateTimePattern="${item_duedate_date_format}" field="dueDate" id="c_mx_itesm_todolist_domain_Item_dueDate" z="2P/+8PjQhvUD9NatREaiQ4OP1mc="/>
+    </form:update>
+</div>
