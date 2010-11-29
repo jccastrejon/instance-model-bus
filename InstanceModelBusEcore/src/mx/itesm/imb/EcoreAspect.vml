@@ -324,14 +324,11 @@ public aspect EcoreAspect_$typeName {
         }
     }
     
-    
-    // TODO: Change File resolution:.
 	public File getLocalState() {
-		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+		return new File(new File(properties.getString("local.dir")), "localState.xml");
 	}
 	
-    // TODO: Change File resolution:.
 	public File getRemoteState() {
-		return new File(new File("/Users/jccastrejon/java"), "remoteState.xml");
+		return new File(new File(properties.getString("local.dir")), "remoteState.xml");
 	}
 }

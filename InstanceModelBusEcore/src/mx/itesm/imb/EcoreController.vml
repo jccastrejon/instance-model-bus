@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 import javax.xml.transform.stream.StreamResult;
@@ -48,7 +49,12 @@ public class EcoreController$type {
     @Autowired
     private Unmarshaller unmarshaller;
     
-    // http://localhost:8080/ecore/" + entityName + "s/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}
+    /**
+    * Configuration properties
+    */
+	private static ResourceBundle properties = ResourceBundle
+			.getBundle("mx.itesm.imb.configuration");
+    
     @RequestMapping(value = "/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}", method = RequestMethod.PUT)
     public boolean update(@PathVariable("url") String url, @PathVariable("entityId") Long entityId, @PathVariable("entityName") String entityName,
 							@PathVariable("notificationType") String notificationType, @PathVariable("returnTypeClass") String returnTypeClass, 
@@ -83,8 +89,7 @@ public class EcoreController$type {
         Object attributeValue;
         
         try {
-        	//TODO: Fix file resolution!!:.
-        	xmlFile = new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist");
+        	xmlFile = new File(properties.getString("input.file"));
         	saxBuilder = new SAXBuilder();
         	rootDocument = saxBuilder.build(xmlFile);
         	
@@ -132,8 +137,7 @@ public class EcoreController$type {
     		
     		// This instance is not being edited, can save changes without problems
     		if(!beingEdited) {
-				//TODO: Fix file resolution!!:.
-    			this.mergeWithLocal(id, object, new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist"));	
+    			this.mergeWithLocal(id, object, new File(properties.getString("input.file")));	
     		}
     		
     		// This instance is being edited, save remote state to compare when
@@ -159,8 +163,7 @@ public class EcoreController$type {
         SAXBuilder saxBuilder;
         
         try {
-	        // TODO: Fix file resolution!!:.
-    	    xmlFile = new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist");
+    	    xmlFile = new File(properties.getString("input.file"));
         	saxBuilder = new SAXBuilder();
 	        rootDocument = saxBuilder.build(xmlFile);
     	    instancePath = XPath.newInstance("//*[@imbId='" + id + "']");
@@ -334,14 +337,11 @@ public class EcoreController$type {
         return returnValue;
     }
     
-    
-    // TODO: Change File resolution:.
 	public File getLocalState() {
-		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+		return new File(new File(properties.getString("local.dir")), "localState.xml");
 	}
 	
-    // TODO: Change File resolution:.
 	public File getRemoteState() {
-		return new File(new File("/Users/jccastrejon/java"), "remoteState.xml");
+		return new File(new File(properties.getString("local.dir")), "remoteState.xml");
 	}
 }
