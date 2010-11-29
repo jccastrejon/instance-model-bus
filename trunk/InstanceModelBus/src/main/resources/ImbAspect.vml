@@ -252,14 +252,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     
     @RequestMapping(value = "/delete/$type.toLowerCase()/{id}", method = RequestMethod.DELETE)
     public void ItemController.imbDelete(@PathVariable("id") Long id) {
-        // This instance is not being edited, can save changes without problems
-        if(!$controllerType.toString()_Roo_Imb. isEditing(id)) {
-        	$type. findByImbId(id).remove();	
-        } else {
-        	//TODO: Check this behavior
-        	// We delete the instance anyway
-        	$type. findByImbId(id).remove();
-        }
+        $type. findByImbId(id).remove();
     }
     
     /**
