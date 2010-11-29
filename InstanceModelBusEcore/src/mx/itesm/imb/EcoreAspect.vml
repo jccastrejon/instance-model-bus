@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.ResourceBundle;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -32,6 +33,12 @@ public aspect EcoreAspect_$typeName {
     private static RestTemplate restTemplate;
     private static Marshaller marshaller;
     private static Unmarshaller unmarshaller;
+    
+    /**
+    * Configuration properties
+    */
+	private static ResourceBundle properties = ResourceBundle
+			.getBundle("mx.itesm.imb.configuration");
 
     static {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
@@ -70,7 +77,7 @@ public aspect EcoreAspect_$typeName {
 						
 						// Send to the Imb
 						new Thread(new NotificationThread("CreateEntity", 
-															"$imbAddress" + "/imb/create/{object}/Eclipse",
+															properties.getString("bus.address") + "/imb/create/{object}/Eclipse",
 															imbType, 
 															referenceName.toLowerCase())).start();
 					} catch(Exception e) {
@@ -93,7 +100,7 @@ public aspect EcoreAspect_$typeName {
 					// Send to the Imb
 					idMethod = notifier.getClass().getMethod("getImbId");
 					new Thread(new NotificationThread("UpdateEntity",
-														"$imbAddress" + "/imb/update/{object}/Eclipse/{id}",
+														properties.getString("bus.address") + "/imb/update/{object}/Eclipse/{id}",
 														imbType, 
 														Boolean.class,
 														containingClass.toLowerCase(), 
@@ -111,7 +118,7 @@ public aspect EcoreAspect_$typeName {
 					referenceName = referenceNameParts[referenceNameParts.length-1].toLowerCase();
 					idMethod = oldValue.getClass().getMethod("getImbId");
 					new Thread(new NotificationThread("DeleteEntity",
-														"$imbAddress" + "/imb/delete/{object}/Eclipse/{id}",
+														properties.getString("bus.address") + "/imb/delete/{object}/Eclipse/{id}",
 														referenceName, 
 														Long.parseLong(idMethod.invoke(oldValue).toString()))).start();
 				} catch(Exception e) {
@@ -274,8 +281,7 @@ public aspect EcoreAspect_$typeName {
 				}
 				
 				if(failedDelivery) {
-					//TODO: Change for property value
-					restTemplate.put("http://localhost:8080/ecore/" + entityName + "s/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}", 
+					restTemplate.put(properties.getString("ecore.address") + entityName + "s/addNotification/{url}/{entityId}/{entityName}/{notificationType}/{returnTypeClass}", 
 										unmarshalledObject, this.getValidUrl(url), this.getValidValue(entityId), this.getValidValue(entityName), 
 										this.getValidValue(notificationType), this.getValidValue(returnTypeClass));
 				}
