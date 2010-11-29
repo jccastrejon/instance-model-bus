@@ -117,6 +117,9 @@ public class EcoreImbEditor {
         try {
             FileUtils.copyFile(new File(templateProject, "/templates/configuration-template.properties"), new File(
                     imbProject, "/src/mx/itesm/imb/configuration.properties"));
+            FileUtils.copyFile(new File(templateProject, "/templates/configuration-template.properties"), new File(
+                    ecoreProject.getParent(), ecoreProject.getName()
+                            + ".editor/src/mx/itesm/imb/configuration.properties"));
         } catch (IOException e) {
             System.out.println("Unable to generate configuration properties file: " + e.getMessage());
         }
