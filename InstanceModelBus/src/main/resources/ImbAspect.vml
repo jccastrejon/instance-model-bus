@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
+import java.util.ResourceBundle;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -53,6 +54,11 @@ public aspect $controllerType.toString()_Roo_Imb {
     @Autowired
     private Unmarshaller $controllerType. unmarshaller;
     
+    /**
+    * Configuration properties
+    */
+	private static ResourceBundle properties = ResourceBundle
+			.getBundle("mx.itesm.imb.configuration");
     
     // Imb Id
     private Long $type. imbId;
@@ -79,7 +85,6 @@ public aspect $controllerType.toString()_Roo_Imb {
     after(Long id, Model model) returning :
     	execution (* ($controllerPackage.$controllerType).updateForm(..)) && args(id, model) {
     	$type object;
-    	boolean remoteMerged;
     	LocalEntity localEntity;
     	
     	try {
@@ -144,7 +149,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 			object.merge();
 			
 			new Thread(new NotificationThread(ImbNotificationType.CreateEntity, 
-												"$imbAddress" + "/imb/create/{object}/Spring",
+												properties.getString("bus.address") + "/imb/create/{object}/Spring",
 												$controllerType.toString()_Roo_Imb. transformToImb$type (object),
 												"$type.toLowerCase()",
 												object,
@@ -176,7 +181,7 @@ public aspect $controllerType.toString()_Roo_Imb {
     		
     		$controllerType.toString()_Roo_Imb. removeLocalAndRemoteEntities();
     		new Thread(new NotificationThread(ImbNotificationType.UpdateEntity, 
-    											"$imbAddress" + "/imb/update/{object}/Spring/{id}",
+    											properties.getString("bus.address") + "/imb/update/{object}/Spring/{id}",
     											$controllerType.toString()_Roo_Imb. transformToImb$type (persistentObject),
     											Boolean.class, 
     											"$type.toLowerCase()", 
@@ -193,7 +198,7 @@ public aspect $controllerType.toString()_Roo_Imb {
 		try {
 		
 			new Thread(new NotificationThread(ImbNotificationType.DeleteEntity, 
-												"$imbAddress" + "/imb/delete/{object}/Spring/{id}", 
+												properties.getString("bus.address") + "/imb/delete/{object}/Spring/{id}", 
 												"$type.toLowerCase()", 
 												$type. find$type (id).getImbId())).start();
 		} catch(Exception e) {
@@ -214,7 +219,6 @@ public aspect $controllerType.toString()_Roo_Imb {
     @RequestMapping(value = "/update/$type.toLowerCase()/{id}", method = RequestMethod.POST)
     public boolean ItemController.imbUpdate(@PathVariable("id") Long id, @RequestBody $imbTypePackage.$type object) {
         $type remoteObject;
-        LocalEntity localEntity;
         RemoteEntity remoteEntity;
         
         // This instance is not being edited, can save changes without problems
