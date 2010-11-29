@@ -113,6 +113,15 @@ public class EcoreImbEditor {
             }
         }
 
+        // Configuration properties file
+        try {
+            FileUtils.copyFile(new File(templateProject, "/templates/configuration-template.properties"), new File(
+                    imbProject, "/src/mx/itesm/imb/configuration.properties"));
+        } catch (IOException e) {
+            System.out.println("Unable to generate configuration properties file: " + e.getMessage());
+        }
+
+        // Selection aspect
         typesPackage = typesPackage.replace(".provider", "");
         EcoreImbEditor.writeSelectionAspect(ecoreProject, typesPackage, types);
     }
@@ -232,8 +241,8 @@ public class EcoreImbEditor {
             // Update classpath
             FileUtils.copyFile(new File(templateProject, "templates/classpath.xml"), new File(ecoreProject.getParent(),
                     ecoreProject.getName() + ".edit/.classpath"));
-            FileUtils.copyFile(new File(templateProject, "templates/classpath.editor.xml"), new File(ecoreProject.getParent(),
-                    ecoreProject.getName() + ".editor/.classpath"));
+            FileUtils.copyFile(new File(templateProject, "templates/classpath.editor.xml"),
+                    new File(ecoreProject.getParent(), ecoreProject.getName() + ".editor/.classpath"));
             templateContent = FileUtils.readFileToString(new File(templateProject, "/templates/project.xml"));
             FileUtils.writeStringToFile(new File(ecoreProject.getParent(), ecoreProject.getName() + ".edit/.project"),
                     templateContent.replace("${projectName}", ecoreProject.getName()));
