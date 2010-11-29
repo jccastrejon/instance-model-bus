@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
 import javax.xml.transform.stream.StreamSource;
@@ -30,6 +31,12 @@ public aspect SelectionAspect {
 	private static Marshaller marshaller;
 	private static Unmarshaller unmarshaller;
 	private static XMLOutputter out = new XMLOutputter();
+	
+    /**
+    * Configuration properties
+    */
+	private static ResourceBundle properties = ResourceBundle
+			.getBundle("mx.itesm.imb.configuration");
 
 	static {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beans.xml");
@@ -88,9 +95,7 @@ public aspect SelectionAspect {
 					unmarshalledObject = this.getObject(this.getRemoteState());
 					if(unmarshalledObject != null) {
 						idMethod = unmarshalledObject.getClass().getDeclaredMethod("getImbId");
-						
-						//TODO: Fix file resolution!!:.
-						this.mergeWithLocal((Long)idMethod.invoke(unmarshalledObject), unmarshalledObject, new File("/Users/jccastrejon/java/runtime-EclipseApplication/TodoList/My.todolist"));
+						this.mergeWithLocal((Long)idMethod.invoke(unmarshalledObject), unmarshalledObject, new File(properties.getString("input.file")));
 					}
 					
 					localState.delete();
@@ -249,14 +254,11 @@ public aspect SelectionAspect {
         return returnValue;
     }
     
-    
-    // TODO: Change File resolution:.
 	public File getLocalState() {
-		return new File(new File("/Users/jccastrejon/java"), "localState.xml");
+		return new File(new File(properties.getString("local.dir")), "localState.xml");
 	}
 	
-    // TODO: Change File resolution:.
 	public File getRemoteState() {
-		return new File(new File("/Users/jccastrejon/java"), "remoteState.xml");
+		return new File(new File(properties.getString("local.dir")), "remoteState.xml");
 	}
 }

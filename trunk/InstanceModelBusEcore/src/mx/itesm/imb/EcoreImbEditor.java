@@ -105,7 +105,7 @@ public class EcoreImbEditor {
                         .replace('/', '.');
 
                 EcoreImbEditor.writeEcoreAspect(provider, imbTypes);
-                EcoreImbEditor.writeEcoreController(imbProject, provider, imbTypes);
+                EcoreImbEditor.writeEcoreController(imbProject, templateProject, provider, imbTypes);
                 System.out.println("Artifacts for " + provider + " successfully generated");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -291,13 +291,14 @@ public class EcoreImbEditor {
 
     /**
      * 
-     * @param ecoreProject
+     * @param imbProject
+     * @param templateProject
      * @param provider
      * @param imbTypes
      * @throws IOException
      */
-    private static void writeEcoreController(final File imbProject, final File provider, final List<File> imbTypes)
-            throws IOException {
+    private static void writeEcoreController(final File imbProject, final File templateProject, final File provider,
+            final List<File> imbTypes) throws IOException {
         String type;
         Writer writer;
         boolean typeFound;
@@ -330,6 +331,10 @@ public class EcoreImbEditor {
                     + ".java"));
             EcoreImbEditor.controllerTemplate.merge(context, writer);
             writer.close();
+
+            // Configuration properties file
+            FileUtils.copyFile(new File(templateProject, "/templates/configuration-template.properties"), new File(
+                    imbProject, "/imb/src/main/resources/mx/itesm/imb/configuration.properties"));
         }
     }
 
