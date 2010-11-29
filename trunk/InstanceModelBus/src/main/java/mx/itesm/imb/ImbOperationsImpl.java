@@ -105,6 +105,7 @@ public class ImbOperationsImpl implements ImbOperations {
         File controllerFile;
         FileDetails srcRoot;
         File configurationFile;
+        String configurationPath;
         String configurationContents;
         SortedSet<FileDetails> entries;
 
@@ -146,6 +147,15 @@ public class ImbOperationsImpl implements ImbOperations {
             FileUtils.writeStringToFile(configurationFile, configurationContents);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error updating Rest configuration: " + e.getMessage());
+        }
+
+        // Configuration file
+        try {
+            configurationPath = pathResolver
+                    .getIdentifier(Path.SRC_MAIN_JAVA, "/mx/itesm/imb/configuration.properties");
+            this.createFile(configurationPath, "configuration-template.properties");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error updating configuration file: " + e.getMessage());
         }
     }
 
@@ -316,7 +326,7 @@ public class ImbOperationsImpl implements ImbOperations {
 
         // Add quartz configuration
         projectOperations.addDependency(new Dependency("opensymphony", "quartz", "1.6.0"));
-        
+
         // Add http-client configuration
         projectOperations.addDependency(new Dependency("commons-httpclient", "commons-httpclient", "3.1"));
 
@@ -390,9 +400,6 @@ public class ImbOperationsImpl implements ImbOperations {
         context.put("type", controllerName.replace("Controller", ""));
         context.put("typePackage", packageName.replace("web", "domain"));
         context.put("imbTypePackage", imbTypePackage.toString());
-
-        // TODO: Change to configuration file
-        context.put("imbAddress", "http://localhost:9090/todolistbus-0.1.0.BUILD-SNAPSHOT");
 
         writer = new FileWriter(new File(controllerPath, controllerName + "_Roo_Imb.aj"));
         ImbOperationsImpl.aspectTemplate.merge(context, writer);
