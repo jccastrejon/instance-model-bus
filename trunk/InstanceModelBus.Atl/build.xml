@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<project name="imb.atl" basedir="." default="distribute">
+	<property file="build.properties" />
+
+	<!-- Package -->
+	<target name="jar">
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<jar destfile="${dist.dir}/${name}-${version}.jar" basedir="${atl.dir}"/>
+	</target>
+
+	<!-- Distribute -->
+	<target name="distribute" depends="jar">
+		<copy todir="${plugin.dir}/lib" preservelastmodified="true">
+			<fileset dir="${dist.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+</project>

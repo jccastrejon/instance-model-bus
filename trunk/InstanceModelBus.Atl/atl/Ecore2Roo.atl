@@ -1,0 +1,113 @@
+--
+-- Copyright 2011 jccastrejon
+--  
+-- This file is part of InstanceModelBus.
+--
+-- InstanceModelBus is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- any later version.
+--
+-- InstanceModelBus is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with InstanceModelBus.  If not, see <http://www.gnu.org/licenses/>.
+--
+
+-- Roo log
+query Ecore2Roo = Ecore!EPackage.allInstances() ->
+    iterate(package; acc: String = '' | acc + package.toString() + '\n') -> println();
+		
+uses Enum;
+uses Entity;
+
+-- Project
+helper context Ecore!EPackage def: toString(): String =
+    if self.name <> 'ecore' then 
+		'project ' + '--topLevelPackage mx.itesm.' + self.name + '\n\n' +
+			'persistence setup' + ' --provider HIBERNATE --database HYPERSONIC_IN_MEMORY \n' +
+			'jaxb xsd compiler setup --generateDirectory src/main/java \n' +
+			'http resource representation setup'
+		
+		+ '\n\n//Static Structure\n' +
+		
+		-- 1. Enums
+		self.eClassifiers -> select(c | c.oclIsTypeOf(Ecore!EEnum)) ->
+			iterate(c; acc: String = '' | acc + c.toString() + '\n') +
+		
+		-- 2. Entities
+		self.eClassifiers -> select(c | not c.oclIsTypeOf(Ecore!EEnum)) ->
+			iterate(c; acc: String = '' | 
+					if c.name <> 'System' then
+						acc + c.toString() + '\n'
+					else acc + ''
+					endif) + '\n' +
+		
+		-- 3. Attributes, references, etc.
+		self.eClassifiers -> select(c | not c.oclIsTypeOf(Ecore!EEnum)) ->
+			iterate(c; acc: String = '' | 
+					if c.name <> 'System' then
+						acc + c.featuresToString() + '\n'
+					else acc + ''
+					endif)
+		
+		+ 'controller all --package mx.itesm.' + self.name + '.web\n'
+		+ 'imb update controllers\n'
+		+ 'imb generate schemas	\n\n'
+			
+		+ '//Notification scheduling\n'	
+			
+		+ 'enum type --class mx.itesm.' + self.name + '.domain.ImbNotificationType\n'
+		+ 'enum constant --name CreateEntity\n'
+		+ 'enum constant --name UpdateEntity\n'
+		+ 'enum constant --name DeleteEntity\n\n'
+
+		+ 'entity --class mx.itesm.' + self.name + '.domain.ImbNotification\n'
+		+ 'field string --fieldName url\n'
+		+ 'field string --fieldName entity\n'
+		+ 'field string --fieldName entityName\n'
+		+ 'field string --fieldName returnTypeClass\n'
+		+ 'field number --fieldName entityId --type java.lang.Long\n'
+		+ 'field enum --type mx.itesm.' + self.name + '.domain.ImbNotificationType --fieldName type\n'
+		+ 'imb generate notificationScheduling\n\n'
+		
+		+ 'perform command --mavenCommand compile\n'
+		+ 'perform command --mavenCommand compile\n' +
+		
+		-- IMB types
+		self.eClassifiers -> select(entity | not entity.oclIsTypeOf(Ecore!EEnum)) ->
+			iterate(entity; acc: String = '' |
+					if entity.name <> 'System' then
+						acc + 'http resource add oxm --class imb.domain.' + 
+						('mx.itesm.' + self.name).split('\\.') ->
+							iterate(package; packageAcc: String = '' | package + '.' + packageAcc)
+						+ entity.name + '\n'
+					else acc + ''
+					endif)
+		
+		
+		+ '\n// Concurrency controls\n'
+		+ 'entity --class mx.itesm.' + self.name + '.domain.RemoteEntity\n'
+		+ 'field string --fieldName entityName\n'
+		+ 'field number --fieldName entityId --type java.lang.Long\n'
+		+ 'field number --fieldName imbId --type java.lang.Long\n'
+		+ 'field date --fieldName validity --type java.util.Date\n'
+		+ 'field string --fieldName entity\n'
+		+ 'finder add --finderName findRemoteEntitysByImbId\n'
+		+ 'finder add --finderName findRemoteEntitysByEntityId\n\n'
+
+		+ 'entity --class mx.itesm.' + self.name + '.domain.LocalEntity\n'
+		+ 'field string --fieldName entityName\n'
+		+ 'field number --fieldName entityId --type java.lang.Long\n'
+		+ 'field number --fieldName imbId --type java.lang.Long\n'
+		+ 'field date --fieldName validity --type java.util.Date\n'
+		+ 'field string --fieldName entity\n'
+		+ 'finder add --finderName findLocalEntitysByImbId\n'
+		+ 'finder add --finderName findLocalEntitysByEntityId\n\n'
+
+		+ 'perform eclipse\n'
+    else ''
+    endif;
