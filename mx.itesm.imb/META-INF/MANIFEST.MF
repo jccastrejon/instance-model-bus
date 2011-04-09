@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Instance Model Bus
+Bundle-SymbolicName: mx.itesm.imb; singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: mx.itesm.imb.Activator
+Bundle-Vendor: ITESM
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.6.0",
+ org.eclipse.m2m.atl;bundle-version="3.1.0",
+ org.eclipse.m2m.atl.engine;bundle-version="3.1.0",
+ org.eclipse.m2m.atl.engine.vm;bundle-version="3.1.0",
+ org.eclipse.m2m.atl.drivers.emf4atl;bundle-version="3.1.0",
+ org.eclipse.m2m.atl.common;bundle-version="3.1.0",
+ org.eclipse.ui.console;bundle-version="3.5.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/commons-io-1.4.jar,
+ .,
+ lib/imb.atl-1.0.jar,
+ lib/imb.bus-1.0.jar,
+ lib/imb.ecore-1.0.jar,
+ lib/jaxen.jar,
+ lib/jdom.jar,
+ lib/velocity-1.6.4-dep.jar,
+ lib/xalan.jar
