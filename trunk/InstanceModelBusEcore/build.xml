@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<project name="imb.ecore" basedir="." default="distribute">
+	<property file="build.properties" />
+
+	<path id="master-classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+
+	<!-- Build -->
+	<target name="clean">
+		<delete includeemptydirs="true">
+			<fileset dir="${build.dir}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="build">
+		<delete includeemptydirs="true">
+			<fileset dir="${build.dir}" includes="**/*" />
+		</delete>
+		<mkdir dir="${build.dir}" />
+		<javac destdir="${build.dir}" source="1.5" target="1.5" debug="true" deprecation="false" optimize="false" failonerror="true">
+			<src path="${src.dir}" />
+			<classpath refid="master-classpath" />
+		</javac>
+		<copy todir="${build.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.vml" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Package -->
+	<target name="jar" depends="build">
+		<delete dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<copy file="MANIFEST.MF" todir="${dist.dir}" />
+		<replace file="${dist.dir}/MANIFEST.MF" token="%%" value="${name}" />
+		<replace file="${dist.dir}/MANIFEST.MF" token="##" value="${version}" />
+		<jar destfile="${dist.dir}/${name}-${version}.jar" basedir="${build.dir}" manifest="${dist.dir}/MANIFEST.MF" />
+		<copy todir="${dist.dir}" preservelastmodified="true">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+		<delete file="${dist.dir}/MANIFEST.MF" />
+	</target>
+
+	<!-- Distribute -->
+	<target name="distribute" depends="jar">
+		<copy todir="${plugin.dir}/lib" preservelastmodified="true">
+			<fileset dir="${dist.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+</project>
