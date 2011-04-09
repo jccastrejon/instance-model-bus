@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="IMB"
+            id="mx.itesm.imb.commands.category">
+      </category>
+      <command
+            name="Generate Spring Roo client and bus"
+            categoryId="mx.itesm.imb.commands.category"
+            id="mx.itesm.imb.commands.rooCommand">
+      </command>
+      <command
+            name="Update IMB Bus and Ecore editor"
+            categoryId="mx.itesm.imb.commands.category"
+            id="mx.itesm.imb.commands.ecoreCommand">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="mx.itesm.imb.commands.rooCommand"
+            class="mx.itesm.imb.handlers.RooHandler">
+			<activeWhen>
+				<with variable="selection">
+           			<iterate operator="or">
+           				<instanceof value="org.eclipse.emf.ecore.EPackage"/>
+           			</iterate>
+           		</with>
+           </activeWhen>
+      </handler>
+      <handler
+            commandId="mx.itesm.imb.commands.ecoreCommand"
+            class="mx.itesm.imb.handlers.EcoreHandler">
+			<activeWhen>
+				<with variable="selection">
+           			<iterate operator="or">
+           				<instanceof value="org.eclipse.core.resources.IProject"/>
+           			</iterate>
+           		</with>
+           </activeWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="mx.itesm.imb.commands.rooCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="mx.itesm.imb.commands.ecoreCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+7"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="Instance Model Bus"
+               mnemonic="M"
+               id="mx.itesm.imb.menus.sampleMenu">
+            <command
+                  commandId="mx.itesm.imb.commands.rooCommand"
+                  mnemonic="R"
+                  id="mx.itesm.imb.menus.rooCommand">
+            </command>
+            <command
+                  commandId="mx.itesm.imb.commands.ecoreCommand"
+                  mnemonic="E"
+                  id="mx.itesm.imb.menus.ecoreCommand">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+
+</plugin>
