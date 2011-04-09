@@ -1,0 +1,87 @@
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 12:15:33
+addon create simple --topLevelPackage  mx.itesm.imb
+perform package
+perform eclipse
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 12:25:46
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 12:25:52
+perform eclipse
+perform package
+perform eclipse
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 12:45:51
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 12:48:30
+perform eclipse
+perform eclipse
+perform package
+perform package
+osgi ps
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 12:55:42
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 13:02:06
+perform eclipse
+perform eclipse
+perform eclipse
+perform package
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 13:09:53
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 13:10:06
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.7.1/com.springsource.org.apache.tools.ant.launch-1.7.1.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant/1.7.1/com.springsource.org.apache.tools.ant-1.7.1.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.lang/2.4.0/com.springsource.org.apache.commons.lang-2.4.0.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.collections/3.2.1/com.springsource.org.apache.commons.collections-3.2.1.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/velocity/com.springsource.org.apache.velocity/1.6.2/com.springsource.org.apache.velocity-1.6.2.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/javax/xml/stream/com.springsource.javax.xml.stream/1.0.1/com.springsource.javax.xml.stream-1.0.1.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.fastinfoset/1.2.2/com.springsource.com.sun.xml.fastinfoset-1.2.2.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/javax/activation/com.springsource.javax.activation/1.1.1/com.springsource.javax.activation-1.1.1.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/javax/xml/bind/com.springsource.javax.xml.bind/2.2.0/com.springsource.javax.xml.bind-2.2.0.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.bind/2.2.0/com.springsource.com.sun.xml.bind-2.2.0.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/jvnet/staxex/com.springsource.org.jvnet.staxex/1.0.0/com.springsource.org.jvnet.staxex-1.0.0.jar
+ osgi install --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.io/1.4.0/com.springsource.org.apache.commons.io-1.4.0.jar
+ osgi install --url  file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/net.tzolov.httprepresentations.roo.addon-1.1.2-SNAPSHOT.jar
+ osgi install --url  file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/net.tzolov.jaxb.roo.addon-1.1.2-SNAPSHOT.jar
+// script --file install-plugins.roo
+quit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 13:10:10
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 13:12:52
+osgi install --url file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+osgi ps
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 14:27:11
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 14:41:21
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant.launch/1.7.1/com.springsource.org.apache.tools.ant.launch-1.7.1.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/ant/com.springsource.org.apache.tools.ant/1.7.1/com.springsource.org.apache.tools.ant-1.7.1.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.lang/2.4.0/com.springsource.org.apache.commons.lang-2.4.0.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.collections/3.2.1/com.springsource.org.apache.commons.collections-3.2.1.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/velocity/com.springsource.org.apache.velocity/1.6.2/com.springsource.org.apache.velocity-1.6.2.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/javax/xml/stream/com.springsource.javax.xml.stream/1.0.1/com.springsource.javax.xml.stream-1.0.1.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.fastinfoset/1.2.2/com.springsource.com.sun.xml.fastinfoset-1.2.2.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/javax/activation/com.springsource.javax.activation/1.1.1/com.springsource.javax.activation-1.1.1.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/javax/xml/bind/com.springsource.javax.xml.bind/2.2.0/com.springsource.javax.xml.bind-2.2.0.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/com/sun/xml/com.springsource.com.sun.xml.bind/2.2.0/com.springsource.com.sun.xml.bind-2.2.0.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/jvnet/staxex/com.springsource.org.jvnet.staxex/1.0.0/com.springsource.org.jvnet.staxex-1.0.0.jar
+ osgi start --url  file:///Users/jccastrejon/.m2/repository/org/apache/commons/com.springsource.org.apache.commons.io/1.4.0/com.springsource.org.apache.commons.io-1.4.0.jar
+ osgi start --url  file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/net.tzolov.httprepresentations.roo.addon-1.1.2-SNAPSHOT.jar
+ osgi start --url  file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/net.tzolov.jaxb.roo.addon-1.1.2-SNAPSHOT.jar
+// script --file install-dependencies.roo
+quit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 14:41:25
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 14:41:43
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 14:42:20
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+osgi start --url file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+// script --file install-plugin.roo
+quit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 14:42:44
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-07 14:43:02
+osgi ps
+exit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-07 14:43:16
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log opened at 2011-04-08 16:43:55
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+osgi start --url file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
+scrip install-plugin.roo
+quit
+// Spring Roo 1.1.2.RELEASE [rev fbc33bb] log closed at 2011-04-08 16:44:14

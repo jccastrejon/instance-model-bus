@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="yes"?>
+
+<project basedir="." default="generateSchemas">
+  <property name="jaxb.home" value="/Users/jccastrejon/java/jaxb-ri-20110115/" />
+  <path id="classpath">
+    <fileset dir="${jaxb.home}" includes="lib/*.jar" />
+  </path>
+	
+  <taskdef name="schemagen" classname="com.sun.tools.jxc.SchemaGenTask">
+    <classpath refid="classpath" />
+  </taskdef>
+
+  <target name="generateSchemas">
+    <echo message="Generating schemas..." />
+    <mkdir dir="schemas" />
+    <schemagen destdir="${output.dir}" srcdir="${src.dir}">
+    	<include name="**/*.java"/>
+      <classpath refid="classpath" />
+    </schemagen>
+  </target>
+</project>
