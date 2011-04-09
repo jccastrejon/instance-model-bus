@@ -1,0 +1,3 @@
+osgi uninstall --bundleSymbolicName mx.itesm.imb
+perform package
+osgi start --url file:///Users/jccastrejon/java/workspace_IMB/InstanceModelBus.Roo/target/mx.itesm.imb-0.1.0.BUILD-SNAPSHOT.jar
