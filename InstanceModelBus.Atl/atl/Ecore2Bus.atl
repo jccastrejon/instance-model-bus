@@ -1,0 +1,66 @@
+--
+-- Copyright 2011 jccastrejon
+--  
+-- This file is part of InstanceModelBus.
+--
+-- InstanceModelBus is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- any later version.
+--
+-- InstanceModelBus is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+
+-- You should have received a copy of the GNU General Public License
+-- along with InstanceModelBus.  If not, see <http://www.gnu.org/licenses/>.
+--	
+
+-- Roo log
+query Ecore2Roo = Ecore!EPackage.allInstances() ->
+    iterate(package; acc: String = '' | acc + package.toString() + '\n') -> println();
+		
+uses Enum;
+uses Entity;
+
+-- Project
+helper context Ecore!EPackage def: toString(): String =
+    if self.name <> 'ecore' then 
+		'project ' + '--topLevelPackage mx.itesm.' + self.name + 'bus\n\n' +
+			'persistence setup' + ' --provider HIBERNATE --database HYPERSONIC_IN_MEMORY \n' +
+			'jaxb xsd compiler setup --generateDirectory src/main/java \n' +
+			'http resource representation setup\n\n'
+		
+		+ 'enum type --class mx.itesm.' + self.name + 'bus.domain.ToolName\n'
+		+ 'enum constant --name Spring\n'
+		+ 'enum constant --name Eclipse\n\n'
+
+		+ 'entity --class mx.itesm.' + self.name + 'bus.domain.Tool\n'
+		+ 'field enum --fieldName name --type mx.itesm.' + self.name + 'bus.domain.ToolName\n'
+		+ 'field string --fieldName description\n'
+		+ 'field string --fieldName ipAddress\n'
+		+ 'field string --fieldName port\n'
+		+ 'field string --fieldName contextPath\n'
+		+ 'controller all --package mx.itesm.' + self.name + 'bus.web\n\n'
+			
+		+ '//Notification scheduling\n'	
+			
+		+ 'enum type --class mx.itesm.' + self.name + 'bus.domain.ImbNotificationType\n'
+		+ 'enum constant --name CreateEntity\n'
+		+ 'enum constant --name UpdateEntity\n'
+		+ 'enum constant --name DeleteEntity\n\n'
+
+		+ 'entity --class mx.itesm.' + self.name + 'bus.domain.ImbNotification\n'
+		+ 'field string --fieldName url\n'
+		+ 'field string --fieldName entity\n'
+		+ 'field string --fieldName entityName\n'
+		+ 'field string --fieldName returnTypeClass\n'
+		+ 'field number --fieldName entityId --type java.lang.Long\n'
+		+ 'field enum --type mx.itesm.' + self.name + 'bus.domain.ImbNotificationType --fieldName type\n'
+		+ 'imb generate notificationScheduling\n\n'
+		
+		+ '// Execute ImbBusController\n'
+		+ '// Execute: roo perform eclipse\n'
+    else ''
+    endif;

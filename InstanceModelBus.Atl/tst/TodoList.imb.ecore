@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xmi:XMI xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore">
+  <ecore:EPackage name="todolist" nsURI="http://todolist/1.0" nsPrefix="todolist">
+    <eClassifiers xsi:type="ecore:EClass" name="System">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="Item" eType="/8"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="imbId" eType="/7"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="Priority">
+      <eLiterals name="LOW"/>
+      <eLiterals name="MEDIUM"/>
+      <eLiterals name="HIGH"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Item">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" eType="/3"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="imbId" eType="/1"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="/6"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="/4"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="imbId" eType="/2"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="dueDate" eType="/5"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="System">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="Item" upperBound="-1"
+          eType="/9" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="System" upperBound="-1"
+          eType="/10" containment="true"/>
+    </eClassifiers>
+  </ecore:EPackage>
+  <ecore:EDataType name="ELongObject"/>
+  <ecore:EDataType name="ELongObject"/>
+  <ecore:EDataType name="EString"/>
+  <ecore:EDataType name="EString"/>
+  <ecore:EDataType name="EDate"/>
+  <ecore:EDataType name="Priority"/>
+  <ecore:EDataType name="ELongObject"/>
+  <ecore:EDataType name="Item"/>
+  <ecore:EDataType name="Item" instanceClassName="Item"/>
+  <ecore:EDataType name="System" instanceClassName="System"/>
+</xmi:XMI>
